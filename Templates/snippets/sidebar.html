@@ -1,0 +1,30 @@
+<div class="col-lg-2">
+    <ul class="list-group">
+        <a href="{% url 'ticket' %}" class="list-group-item d-flex justify-content-between align-items-center text-dark" >
+            Create
+        </a>
+        <a href="{% url 'my_inactive' %}" class="list-group-item d-flex justify-content-between align-items-center text-dark" >
+            Pending
+          <span class="badge badge-info badge-pill">{{my_pendings}}</span><span class="badge badge-danger badge-pill">{{pending}}</span>
+        </a>
+        <a href="{% url 'my_active' %}" class="list-group-item d-flex justify-content-between align-items-center text-dark" >
+            Active
+          <span class="badge badge-info badge-pill float-right">{{my_actives}}</span>
+          <span class="badge badge-danger badge-pill">{{active}}</span>
+        </a>
+        <a href="{% url 'my_sent' %}" class="list-group-item d-flex justify-content-between align-items-center text-dark" >
+            Sent
+        </a>
+        <a href="{% url 'group_creation' %}" class="list-group-item d-flex justify-content-between align-items-center text-dark" >
+          Groups
+        </a>
+        
+        <a href="{% url 'all_completed_ticket' %}" class="list-group-item d-flex justify-content-between align-items-center text-dark" >
+          Completed
+          <span class="badge badge-danger badge-pill">{{completes}}</span>
+        </a>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          Draft
+        </li>
+    </ul>
+</div>

@@ -1,0 +1,88 @@
+{% load static %}
+
+<!-- <h1 class="text-center"><span class="text-danger">REG</span> <span class="text-primary">EUCL</span>/<span class="'text-success">EDCL</span></h1> -->
+<nav class="navbar sticky-top navbar-expand-md bg-white navbar-light">
+  <a class="navbar-brand" href="#">
+    {% if request.user.is_authenticated %}
+
+      {% if request.user.user_info.company.first.name == 'EUCL' %}
+        <img src="{% static 'img/EUCL.png' %}" max-width="60" height="30" alt="img/{{request.user.user_info.company.first}}.png">
+      {% elif request.user.user_info.company.first.name == 'EDCL' %}
+        <img src="{% static 'img/EDCL.png' %}" max-width="60" height="30" alt="img/{{request.user.user_info.company.first}}.png">
+      {% elif request.user.user_info.company.first.name == 'REG' %}
+        <img src="{% static 'img/logo.png' %}" max-width="60" height="30" alt="img/{{request.user.user_info.company.first}}.png">
+      {% else %}
+        <img src="{% static 'img/logo.png' %}" max-width="60" height="30" alt="">
+      {% endif %}
+
+    {% else %}
+      <img src="{% static 'img/logo.png' %}" max-width="60" height="30" alt="">
+    {% endif %}
+  </a>
+  <div class="container">
+    
+    <button class="navbar-toggler" data-toggle="collapse" data-target="#navbar">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbar">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item">
+        <a href="/" class="nav-link"><i class="fa fa-home"></i> Home</a>
+      </li>
+      {% if request.user.is_authenticated %}
+        <li class="nav-item">
+          <a href="{% url 'procurement_plans_list' %}" class="nav-link"><i class="fa fa-list"></i> Procurement Plans</a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'tenders' %}" class="nav-link"><i class="fa fa-list"></i> Tenders</a>
+        </li>
+        {% comment %} <li class="nav-item">
+          <a href="{% url 'plan_search' %}" class="nav-link"><i class="fa fa-search"></i> search</a>
+        </li> {% endcomment %}
+        <li class="nav-item">
+          <a href="{% url 'stage_creation' %}" class="nav-link"><i class="fa fa-table"></i> Stages</a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'create_method' %}" class="nav-link"><i class="fa fa-timeline"></i> Methods</a>
+        </li>
+        {% if request.user.is_staff %}
+        <li class="nav-item">
+          <a href="/admin" class="nav-link">Admin</a>
+        </li>
+        {% endif %}
+      {% else %} 
+        <li class="nav-item">
+          <a href="{% url 'all_plans' %}" class="nav-link"><i class="fa fa-list"></i> Procurement Plans</a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'tenders' %}" class="nav-link"><i class="fa fa-list"></i> Tenders</a>
+        </li>
+      {% endif %}
+      
+    </ul>
+          <!-- <form class="form-inline my-2 my-lg-0" action="#">
+              <input type="text" class="form-control mr-2 my-lg-0" name='quero' aria-label="Search" value="{{request.GET.quero}}" placeholder="search...">
+              <button class="btn btn-outline-light"><i class="fa fa-search"></i></button>
+          </form> -->
+    </div>
+    <ul class="nav navbar-nav navbar-md-right px-2">
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <i class="fa fa-user-circle"></i>
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+          {% if request.user.is_authenticated %}
+          <a href="/logout/" class="dropdown-item"><i class="fa fa-sign-out"></i> Logout</a>
+            {% if request.user.is_staff %}
+              <a href="/register/user/" class="dropdown-item"><i class="fa fa-user-plus"></i> Register</a>
+              <a href="/user/list/" class="dropdown-item"><i class="fa fa-list"></i> List</a>
+            {% endif %}
+          {% else %}
+              <a href="/login/" class="dropdown-item"><i class="fa fa-sign-in"></i> Login</a>
+          {% endif %}
+        </div>
+      </li>
+      
+    </ul>
+  </div>
+</nav>

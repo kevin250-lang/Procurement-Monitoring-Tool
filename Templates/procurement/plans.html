@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+{% load static %}
+
+<html lang="en">
+<head>
+    {% include 'snippets/head.html' %}
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" integrity="sha512-r22gChDnGvBylk90+2e/ycr3RVrDi8DIOkIGNhJlKfuyQM4tIRAI062MaV8sfjQKYVGjOBaZBOA87z+IhZE9DA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script defer src="{% static 'js/excel-files.js' %}"></script>
+</head>
+<body>
+  {% include 'snippets/navbar.html' %}
+    <div class="container">
+        <div class="my-3">
+        {% if succesful %}
+          <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>{{succesful}}</strong>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        {% elif failed %}
+          <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>{{failed}}</strong>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        {% endif %}
+        
+        <form action="{% url 'file_upload' %}?next={{request.url}}" method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+          <!-- file picker -->
+          {% comment %} <label for="company" >Company: </label>
+          <select name="company" id="" class="form-control">
+            <option value="REG">REG</option>
+            <option value="EDCL">EDCL</option>
+            <option value="EUCL">EUCL</option>
+          </select><br> {% endcomment %}
+
+          <label for="title">Title: </label>
+          <input type="text" name="title" id="" class="form-control" required><br>
+
+          <label for="demoa">File: </label>
+          <input type="file" name="files" id="demoa" class="form-control" required><br>
+
+          <input type="submit" class="btn btn-primary" value="Upload">
+        </form>
+
+
+        <ul class="list-group list-group-flush my-4">
+          {% for file in proc_files %}
+            <li class="list-group-item">
+              {% if file.company|upper == 'REG' %}<b><span class="text-danger">{{file.company}} | </span> </b> {% elif file.company|upper == 'EUCL' %}<b><span class="text-primary">{{file.company}} | </span> </b> {% elif file.company|upper == 'EDCL' %}<b><span class="text-success">{{file.company}} | </span> </b> {% endif %}
+                {{file.title}} : {{file.plan_tenders.all.count}}
+                <button type="button" class="btn btn-sm btn-danger float-right mx-2" data-toggle="modal" data-target="#exampleModalDurationDelete{{file.id}}">
+                  <i class="fa fa-trash"></i>Delete
+                </button>
+                <a href="{% url 'procurement_plan_detail' file.pk %}" class="btn-sm btn-primary float-right"><i class="fa fa-circle-info"></i> Detail</a>
+            </li>
+          {% endfor %}
+        </ul>
+
+        <!-- file table -->
+        <table id="demob">
+
+        </table>
+      </div>
+
+    </div>
+
+
+
+    <!-- Modal for deleting item -->
+    {% for file in proc_files %}
+        <div class="modal fade" id="exampleModalDurationDelete{{file.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h6 class="modal-title" id="exampleModalLabel">{{file.title}} :{{file.plan_tenders.all.count}}</h6>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-danger">Do you want to delete this Plan?</p>
+                        <p><strong>{{meth_dur.stage}}</strong> which has duration of <strong>{{meth_dur.delay}}</strong></p>
+                        <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-success" data-dismiss="modal">Cancel</button>
+                        <a href="{% url 'procurement_plan_deletion' file.pk %}?next={{request.url}}" class="btn btn-outline-danger float-right mx-1">Yes</a>
+                        </div>                
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    {% endfor %}
+
+</body>
+</html>

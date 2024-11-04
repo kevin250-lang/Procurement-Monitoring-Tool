@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    {% include 'snippets/head.html' %}
+</head>
+<body>
+    {% include 'snippets/navbar.html' %}
+
+    <div class="container">
+      
+      <div class="row my-2">
+        <div class="col-4">
+          <div class="list-group" id="list-tab" role="tablist">
+            {% for stage in stages %}
+            <a class="list-group-item list-group-item-action" id="list-home-list" data-toggle="list" href="#list-home{{stage.id}}" role="tab" aria-controls="home">
+              {{stage.title|upper|truncatechars_html:25}}
+              <button type="button" class="btn btn-outline-dark btn-sm float-right mx-1" data-toggle="modal" data-target="#exampleModalStageEdit{{stage.id}}">
+                <i class="fa fa-pen"></i>
+              </button>
+              <button type="button" class="btn btn-outline-danger btn-sm float-right mx-1" data-toggle="modal" data-target="#exampleModalStageDelete{{stage.id}}">
+                <i class="fa fa-trash"></i>
+              </button>
+            </a>
+            {% endfor %}
+            <br>
+            <button type="button" class="btn btn-outline-primary btn-sm float-right mx-1" data-toggle="modal" data-target="#exampleModalStageAdd">
+              <i class="fa fa-plus"></i> Stage
+            </button>
+          </div>
+        </div>
+        <div class="col-8">
+          <div class="tab-content" id="nav-tabContent">
+            {% for stage in stages %}
+                <div class="tab-pane fade show" id="list-home{{stage.id}}" role="tabpanel" aria-labelledby="list-home-list">
+                  {% comment %} <div class="col">{{stage.number}}</div> {% endcomment %}
+                  <div class="col">{{stage.title}}</div>
+                  <div class="col">{{stage.description|safe}}</div>
+                </div>
+            {% endfor %}
+            
+          </div>
+        </div>
+      </div>
+
+
+      <!-- Modal for Stage Updation -->
+      {% for stage in stages %}
+        
+        <div class="modal fade" id="exampleModalStageEdit{{stage.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h6 class="modal-title" id="exampleModalLabel">{{stage.title|upper}}</h6>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <form action="{% url 'stage_updation' stage.id %}" method="POST" enctype="multipart/form-data">
+                  {% csrf_token %}
+                  <input type="hidden" name="stage" value="{{stage.id}}">
+                  <label for="number">Number</label>
+                  <input name="number" id='number' type="number" value="{{stage.number}}" class="form-control">
+                  <label for="title">Title</label>
+                  <input type="text" name="title" id="title" value="{{stage.title}}" class="form-control">
+                  {{stageform.as_p}}
+                  {{stageform.media|safe}}
+                  <input type="submit" class="btn btn-primary">
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+
+      <!-- Modal for Stage Deletion -->
+      {% for stage in stages %}
+        
+        <div class="modal fade" id="exampleModalStageDelete{{stage.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h6 class="modal-title text-danger" id="exampleModalLabel">STAGE DELETION</h6>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <p class="text-dark">
+                  <b>Do you want to delete:</b><br>
+                  <h5>{{stage.title}}</h5>
+                </p>
+              </div>
+              <div class="modal-footer">
+                <a href="{% url 'stage_deletion' stage.pk %}" class="btn btn-danger"><i class="fa fa-trash"></i></a>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+
+      <!-- Modal for Stage Add -->
+        
+      <div class="modal fade" id="exampleModalStageAdd" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h6 class="modal-title text-primary" id="exampleModalLabel">STAGE Addition</h6>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <form action="{% url 'stage_creation' %}" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <label for="number">Number</label>
+                <input name="number" id='number' type="number" value="{{stage.number}}" class="form-control">
+                <label for="title">Title</label>
+                <input type="text" name="title" id="title" value="{{stage.title}}" class="form-control">
+                {{stageform.as_p}}
+                {{stageform.media|safe}}
+
+                <input type="submit" class="btn btn-primary">
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+   
+    </div>
+</body>
+</html>

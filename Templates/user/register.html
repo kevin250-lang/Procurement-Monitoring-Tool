@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    {% include 'snippets/head.html'%}
+</head>
+
+<body>
+{% include 'snippets/navbar.html' %}
+<div class="container ">
+    <div class="col-lg-6">
+        <span style="vertical-align:middle;text-shadow: 1px 1px 3px #036992;">
+            <h2 class='pt-lg-3'><strong>Register</strong></h2>
+        </span>
+        <form class="form-group" enctype="multipart/form-data" method="post">
+            {% if warning %}
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <strong>{{warning}}</strong>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            {% endif %}
+            {% csrf_token %}
+            <div class="row  my-3">
+                <div class="col-md-6">
+                    <div class="md-form mb-0">
+                        <label for="first_name" class="">First Name:</label>
+                        <input type="text" name="first_name" class="form-control" placeholder="first_name" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="md-form mb-0">
+                        <label for="last_name:" class="">Last Name:</label>
+                        <input type="text"  name="last_name" class="form-control" placeholder="last_name" required>
+                    </div>
+                </div>
+            </div>
+            <div class="row  my-3">
+                <div class="col-md-6">
+                    <div class="md-form mb-0">
+                        <label for="username" class="">Username:</label>
+                        <input type="text"  name="username" id="username" class="form-control" placeholder="username" required>
+                        <small class="text-warning" for="username">*Please don't use a space in your usename</small>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="md-form mb-0">
+                        <label for="email" class="">E-mail:</label>
+                        <input type="email" name="email" class="form-control" placeholder="@eucl.reg.rw/@edcl.reg.rw" required>
+                    </div>
+                </div>
+            </div>
+            <div class="row  my-3">
+                <div class="col-md-6">
+                    <div class="md-form mb-0">
+                        <label for="password" class="">Password:</label>
+                        <input type="password"  name="password" class="form-control" placeholder="password" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="md-form mb-0">
+                        <label for="password2" class="">Confirm Password:</label>
+                        <input type="password" name="password2" class="form-control" placeholder="Confirm your Password" required>
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-outline-primary my-4" type="submit">Continue</button>
+        </form>
+    </div>
+            
+</div>
+
+<script>
+    var field = document.querySelector('[name="username"]');
+    field.addEventListener('keypress', function(event){
+        var key = event.keyCode;
+        if (key===32){
+            event.preventDefault();
+        }
+    })
+</script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+{% load static %}
+{% load humanize %}
+
+<html lang="en">
+<head>
+    {% include 'snippets/head.html' %}
+</head>
+<body>
+    {% include 'snippets/navbar.html' %}
+    <div class="container">
+        <h2 class="text-center"><b>Procurement Monitoring System</b></h2>
+      {{year_plan}}
+    {% if year_plan %}
+        <p><b>{{year_plan.company}} | {{year_plan.title}}</b></p>
+    {% endif %}
+      
+      <div class="row">
+        <div class="col-lg-2">
+          <div class="list-group" id="list-tab" role="tablist">
+            <a class="list-group-item" href="{% url 'home' %}">
+              Performance
+            </a>
+            <a class="list-group-item active" href="{% url 'progress' %}">
+              Progress Status
+            </a>
+            <a class="list-group-item" href="{% url 'departments' %}">
+              Departments
+            </a>
+            {% comment %} <a class="list-group-item list-group-item-action" id="list-home-list"  href="{% url 'data_backup' %}">
+              Data Backup
+            </a> {% endcomment %}
+
+          </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="tab-pane" id="list-home-progress" role="tabpanel">
+                <table class="table">
+                    <thead>
+                      <tr>
+                        <th scope="col">Stages</th>
+                        <th scope="col">Actual Duration Total</th>
+                        <th scope="col">Used Time Total</th>
+                        <th scope="col">Average</th>
+                        <th scope="col">Tenders</th>
+                        <th scope="col">Percent</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    {% for stage in year_plan.over_stages_procurement.all %}
+                      <tr>
+                          <td>{{stage.stage.title}}</td>
+                          <td>{{stage.actual_duration_total|truncatechars:12}}</td>
+                          <td><span class="text-primary">{{stage.used_time_total|truncatechars:12}}</span></td>
+                          <td><span class="text-success">{{stage.average|truncatechars:12}} </td>
+                          <td class="text-info"><u><a href="{% url 'overall_stage_detail' stage.pk %}">{{stage.plans_on_stage.count}}</a></u></td>
+                          <td> {{stage.percent}}%</span></td>
+                        
+                      </tr>
+                    {% endfor %}
+                      
+                    </tbody>
+                </table>
+              
+              </div>
+        </div>
+
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+{% load static %}
+{% load humanize %}
+
+<html lang="en">
+<head>
+    {% include 'snippets/head.html' %}
+</head>
+<body>
+    {% include 'snippets/navbar.html' %}
+    <div class="container">
+        <h2 class="text-center"><b>Procurement Monitoring System</b></h2>
+      {{year_plan}}
+    {% if year_plan %}
+        <p><b>{{year_plan.company}} | {{year_plan.title}}</b></p>
+    {% endif %}
+      
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="tab-pane" id="list-home-progress" role="tabpanel">
+                <table class="table">
+                    <thead>
+                      <tr>
+                        <th scope="col">Stages</th>
+                        <th scope="col">Actual Duration Total</th>
+                        <th scope="col">Used Time Total</th>
+                        <th scope="col">Average</th>
+                        <th scope="col">Tenders</th>
+                        <th scope="col">Percent</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    {% for stage in year_plan.over_stages_procurement.all %}
+                      <tr>
+                          <td>{{stage.stage.title}}</td>
+                          <td>{{stage.actual_duration_total|truncatechars:12}}</td>
+                          <td><span class="text-primary">{{stage.used_time_total|truncatechars:12}}</span></td>
+                          <td><span class="text-success">{{stage.average|truncatechars:12}} </td>
+                          <td class="text-info"><u><a href="{% url 'overall_stage_detail' stage.pk %}">{{stage.plans_on_stage.count}}</a></u></td>
+                          <td> {{stage.percent}}%</span></td>
+                        
+                      </tr>
+                    {% endfor %}
+                      
+                    </tbody>
+                </table>
+              
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="tab-pane" id="list-home-progress" role="tabpanel">
+                <table class="table">
+                    <thead>
+                      <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col">Total</th>
+                        <th scope="col">Committed</th>
+                        <th scope="col">Budget</th>
+                        {% comment %} <th scope="col">Percent</th> {% endcomment %}
+                        <th scope="col">Overall Budget</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    {% for department in year_plan.over_department_procurement.all %}
+                        <tr>
+                            <td>{{department.department.name}}</td>
+                            <td class="text-info"><u><a href="{% url 'overall_department_detail' department.pk %}">{{department.tenders.count}}</a></u></td>
+                            <td>{% if department.committed.first %}{{department.committed.count}}{% else %}0{% endif %}</td>
+                            <td>{% if department.in_use_budget %}{{department.in_use_budget|intcomma}}{% else %}0{% endif %}
+                                ({% if department.percent %}{{department.percent}}%{% else %}0%{%endif%})</td>
+                            <td>{{department.overall_budget|intcomma}} ({{department.overall_budget_perc}}%)</td>
+                                {% comment %} {% for stagy in stage.over_stage.all %}
+                                <td><span class="">{{stagy.actual_duration_total}}</span></td> <td><span class="text-primary">{{stagy.used_time_total}}</span></td> <td><span class="text-success">{{stagy.average}} </td><td> {{stage.current_stage.count}} plan</td><td> {{stagy.overall_budget}}%</span></td>
+                                {% endfor %}  {% endcomment %}
+                        </tr>
+                    {% endfor %}
+                        <tr>
+                            <td>Total</td>
+                            <td>{{year_plan.plan_tenders.count}}</td>
+                            <td></td>
+                            <td></td>
+                            {% comment %} <td></td> {% endcomment %}
+                            <td>{% if year_plan.total_budget %}{{year_plan.total_budget|intcomma}} Rwf{% endif %}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

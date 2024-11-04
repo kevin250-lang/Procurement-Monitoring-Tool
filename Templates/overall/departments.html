@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+{% load static %}
+{% load humanize %}
+
+<html lang="en">
+<head>
+    {% include 'snippets/head.html' %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+</head>
+<body>
+    {% include 'snippets/navbar.html' %}
+    <div class="px-5">
+
+      {% if year_plan %}
+        <p>
+          <b><a href="{% url 'procurement_plans_list' %}" >{{year_plan.company}}</a> | 
+          <a href="{% url 'procurement_plan_detail' year_plan.pk %}" >{{year_plan}}</a></b>
+        </p>
+      {% endif %}
+        
+        <div class="row my-3">
+            <div class="col-lg-2">
+                <div class="list-group" id="list-tab" role="tablist">
+                  <a class="list-group-item" href="{% url 'home' %}">
+                    Over Companies
+                  </a>
+                  <a class="list-group-item" href="{% url 'progress' %}">
+                    Progress Status
+                  </a>
+                  <a class="list-group-item active" href="{% url 'departments' %}">
+                    Departments
+                  </a>
+                  {% comment %} <a class="list-group-item" href="{% url 'data_backup' %}">
+                    Data Backup
+                  </a> {% endcomment %}
+    
+                </div>
+            </div>
+
+
+            <div class="col-lg-5">
+              <canvas id="myChart" style="max-width:100%, height:500px"></canvas>
+            </div>
+            <div class="col-lg-5">
+              <canvas id="myChartP" style="max-width:100%, height:500px"></canvas>
+            </div>
+        </div>
+
+        <div class="row">
+          <div class="col-lg-2"></div>
+          <div class="col-lg-10">
+            <div class="tab-pane fade show" id="list-home-Departments" role="tabpanel" aria-labelledby="list-home-list">
+                <table class="table">
+                    <thead>
+                      <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col">Total</th>
+                        <th scope="col">Committed</th>
+                        <th scope="col">Budget</th>
+                        {% comment %} <th scope="col">Percent</th> {% endcomment %}
+                        <th scope="col">Overall Budget</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    {% for department in year_plan.over_department_procurement.all %}
+                        <tr>
+                            <td>{{department.department.name}}</td>
+                            <td class="text-info"><u><a href="{% url 'overall_department_detail' department.pk %}">{{department.tenders.count}}</a></u></td>
+                            <td>{% if department.committed.first %}{{department.committed.count}}{% else %}0{% endif %}</td>
+                            <td>{% if department.in_use_budget %}{{department.in_use_budget|intcomma}}{% else %}0{% endif %}
+                                ({% if department.percent %}{{department.percent}}%{% else %}0%{%endif%})</td>
+                            <td>{{department.overall_budget|intcomma}} ({{department.overall_budget_perc}}%)</td>
+                                {% comment %} {% for stagy in stage.over_stage.all %}
+                                <td><span class="">{{stagy.actual_duration_total}}</span></td> <td><span class="text-primary">{{stagy.used_time_total}}</span></td> <td><span class="text-success">{{stagy.average}} </td><td> {{stage.current_stage.count}} plan</td><td> {{stagy.overall_budget}}%</span></td>
+                                {% endfor %}  {% endcomment %}
+                        </tr>
+                    {% endfor %}
+                        <tr>
+                            <td>Total</td>
+                            <td>{{year_plan.plan_tenders.count}}</td>
+                            <td></td>
+                            <td></td>
+                            {% comment %} <td></td> {% endcomment %}
+                            <td>{% if year_plan.total_budget %}{{year_plan.total_budget|intcomma}} Rwf{% endif %}</td>
+                        </tr>
+                    </tbody>
+                </table>  
+            </div>
+          </div>
+
+        </div>
+    </div>
+
+
+    <script>
+      var xValues = {{xvalue|safe}};
+      var yValues = {{yvalue|safe}};
+      var barColors = "brown";
+      
+      new Chart("myChart", {
+        type: "bar",
+        data: {
+          labels: xValues,
+          datasets: [{
+            backgroundColor: barColors,
+            data: yValues
+          }]
+        },
+        options: {
+          legend: {display: true},
+          title: {
+            display: true,
+            text: "Departments Budget (RWF)"
+          }
+        }
+      });
+    </script>
+
+    <script>
+      var xValues = {{p_xvalue|safe}};
+      var yValues = {{p_yvalue|safe}};
+      var barColors = "#00aba9";
+       
+      
+      new Chart("myChartP", {
+        type: "pie",
+        data: {
+          labels: xValues,
+          datasets: [{
+            backgroundColor: barColors,
+            data: yValues
+          }]
+        },
+        options: {
+          title: {
+            display: true,
+            text: "Contracted Tenders"
+          }
+        }
+      });
+      </script>
+
+
+
+
+</body>
+</html>

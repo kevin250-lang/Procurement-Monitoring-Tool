@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+{% load static %}
+
+<html lang="en">
+<head>
+    {% include 'snippets/head.html' %}
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+  {% include 'snippets/navbar.html' %}
+    <div class="container">
+        <h2>
+          {% if plan.company|upper == 'REG' %}<b><span class="text-danger">{{plan.company}} | </span> </b> {% elif plan.company|upper == 'EUCL' %}<b><span class="text-primary">{{plan.company}} | </span> </b> {% elif plan.company|upper == 'EDCL' %}<b><span class="text-success">{{plan.company}} | </span> </b> {% endif %}
+          
+          {{plan.title}}</h2>
+        <p class="disable"><small>You can search in table by one of the fields:</small></p>  
+        <input class="form-control" id="myInput" type="text" placeholder="Search..">
+        <br>
+        <div class="table-lg-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th></th>
+                <th><small><b>Activity ID</b></small></th>
+                <th><small><b>Departments</b></small></th>
+                
+                <th><small><b>Tender Description</b></small></th>
+                <th><small><b>Estimated Budget</b></small></th>
+                <th><small><b>Source of Fund</b></small></th>
+                <th><small><b>Method</b></small></th>
+                <th><small><b>Status</b></small></th>
+                <th><small><b>Action</b></small></th>
+              </tr>
+            </thead>
+            <tbody id="myTable">
+              {% for tender in plan_tenders %}
+              <tr>
+                <td><small><a href="{% url 'tender_detail' tender.pk %}" class="btn btn-primary-sm"><i class="fa fa-info-circle"></i></a></small></td>
+                <td><small>{{tender.activity_id}}</small></td>
+                <td><small>{{tender.department}}</small></td>
+                <!-- <td><small>{{tender.department}}</small></td> -->
+                <td><small>{{tender.activity_description}}</small></td>
+                <td><small>{{tender.estimated_cost}}</small></td>
+                <td><small>{{tender.source_of_fund}}</small></td>
+                <td><small>{{tender.tendering_method}}</small></td>
+                <td><small>{{tender.workon.last.stage}}</small></td>
+                
+                <td>
+                  {% if tender.canceled != time_zero and tender.activity_status == 'Canceled' %}
+                    <span class="text-danger"><b>Canceled</b></span>
+                  {% elif tender.workon.last.stage.title == tender.tendering_method.method_duration.all.last.stage.title and tender.workon.last.time_taken != time_zero %}
+                    <span class="text-success"><b>Closed</b></span>
+                  {% else %}
+                    {% if request.user.is_authenticated %}
+                      <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalEdit{{tender.id}}"><i class="fa fa-paper-plane"></i></button>
+                    {% else %}
+                      <small><b>In_Progress</b></small>
+                    {% endif %}
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+
+              {% for tender in republished %}
+              <tr>
+                <td><small><a href="{% url 'republished_detail' tender.pk %}" class="btn btn-primary-sm"><i class="fa fa-info-circle"></i></a></small></td>
+                <td><small>{{tender.activity_id}}</small></td>
+                <td><small>{{tender.department}}</small></td>
+                <!-- <td><small>{{tender.department}}</small></td> -->
+                <td><small>{{tender.activity_description}}</small></td>
+                <td><small>{{tender.estimated_cost}}</small></td>
+                <td><small>{{tender.source_of_fund}}</small></td>
+                <td><small>{{tender.tendering_method}}</small></td>
+                <td><small>{{tender.workon.last.stage}}</small></td>
+                
+                <td>
+                  {% if tender.canceled != time_zero and tender.activity_status == 'Canceled' %}
+                    <span class="text-danger"><b>Canceled</b></span>
+                  {% elif tender.workon.last.stage.title == tender.tendering_method.method_duration.all.last.stage.title and tender.workon.last.time_taken != time_zero %}
+                  {{tender.workon.last.time_taken}}
+                  {{time_zero}}
+                    <span class="text-success"><b>Closed</b></span>
+                  {% else %}
+                    {% if request.user.is_authenticated %}
+                      <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalEditrepublished{{tender.id}}"><i class="fa fa-paper-plane"></i></button>
+                    {% else %}
+                      <small><b>In_Progress</b></small>
+                    {% endif %}
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+
+            </tbody>
+          </table>
+        </div>
+        <p>It is {% now "jS F Y H:i" %}</p>
+    </div>
+      
+
+
+
+    <!-- Modal for editing item -->
+    {% for tender in plan_tenders.all %}
+    <div class="modal fade" id="exampleModalEdit{{tender.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel"><b>{{tender.company_name}}</b>{{tender.activity_description|upper}}</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form action="{% url 'tender_update' tender.procurement_doc.id %}?next={{ request.path }}" method="POST" enctype="multipart/form-data">
+              {% csrf_token %}
+              
+                <input type="hidden" value="{{tender.id}}" name="tender">
+                {% comment %} <label for="DatetimeLocal">Close Date</label>
+                <input type="datetime-local" class="form-control form-control-sm" value="{{tender.close_date}}" name="date" id="DatetimeLocal"><br>
+               {% endcomment %}
+                <small>
+                  <div class="input-group">
+                    <label for="inputGroupSelect01">Stages</label>
+                    <select class="form-control form-select" name="process" id="inputGroupSelect01">
+                      {% if tender.workon.last.stage.title == tender.tendering_method.method_duration.all.last.stage.title and not tender.workon.last.closed_date %}
+                          {% comment %} <option value="previous"><b>Previous Stage</b></option> {% endcomment %}
+                          <option value="current" selected disabled>{{tender.workon.last.stage.title}}</option>
+                          <option value="next"><b>Close Tender</b></option>
+                      {% elif not tender.workon.last %}
+                          <option value="next"><b>{{tender.tendering_method.method_duration.all.first.stage.title}}</b></option>
+                      {% elif tender.workon.last.stage.title != tender.tendering_method.method_duration.all.last.stage.title %}
+                          <option value="current" selected disabled>{{tender.workon.last.stage.title}}</option>
+                          <option value="next"><b>Next Stage</b></option>
+                      {% else %}
+                          <option value="next" selected>{{stage.title}}</option>
+                      {% endif %}
+                    </select>
+                  </div>
+                </small>
+                <label for="files"></label>
+                <input type="file" class="form-control" name="files" id="files" multiple>
+              <button type="submit" class="btn btn-primary my-3">Confirm</button>
+              <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#exampleCancel{{tender.id}}">
+                Cancel
+              </button>
+            </form>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+
+
+    <!-- Modal for forwarding republished item -->
+    {% for tender in republished.all %}
+    <div class="modal fade" id="exampleModalEditrepublished{{tender.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel"><b>{{tender.company_name}}</b>{{tender.activity_description|upper}}</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form action="{% url 'republished_tender_update' tender.procurement_doc.id %}?next={{request.path}}" method="POST" enctype="multipart/form-data">
+              {% csrf_token %}
+              
+                <input type="hidden" value="{{tender.id}}" name="tender">
+                {% comment %} <label for="DatetimeLocal">Close Date</label>
+                <input type="datetime-local" class="form-control form-control-sm" value="{{tender.close_date}}" name="date" id="DatetimeLocal"><br>
+               {% endcomment %}
+                <small>
+                  <div class="input-group">
+                    <label for="inputGroupSelect01">Stages</label>
+                    <select class="form-control form-select" name="process" id="inputGroupSelect01">
+                      {% if tender.workon.last.stage.title == tender.tendering_method.method_duration.all.last.stage.title and not tender.workon.last.closed_date %}
+                          {% comment %} <option value="previous"><b>Previous Stage</b></option> {% endcomment %}
+                          <option value="current" selected disabled>{{tender.workon.last.stage.title}}</option>
+                          <option value="next"><b>Close Tender</b></option>
+                      {% elif not tender.workon.last %}
+                          <option value="next"><b>{{tender.tendering_method.method_duration.all.first.stage.title}}</b></option>
+                      {% elif tender.workon.last.stage.title != tender.tendering_method.method_duration.all.last.stage.title %}
+                          <option value="current" selected disabled>{{tender.workon.last.stage.title}}</option>
+                          <option value="next"><b>Next Stage</b></option>
+                      {% else %}
+                          <option value="next" selected>{{stage.title}}</option>
+                      {% endif %}
+                    </select>
+                  </div>
+                </small>
+                <label for="files"></label>
+                <input type="file" class="form-control" name="files" id="files" multiple>
+              <button type="submit" class="btn btn-primary my-3">Confirm</button>
+              <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#exampleCancel{{tender.id}}">
+                Cancel
+              </button>
+            </form>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+
+    <!-- Tender Canceling Modal -->
+    {% for tender in plan_tenders.all %}
+    <div class="modal fade" id="exampleCancel{{tender.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Are you sure you want to cancel this tender</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            {{tender.activity_description}}
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-success text-light" data-dismiss="modal">No</button>
+            <a href="{% url 'cancel_tender' tender.id %}?next={{ request.path }}" class="btn btn-danger">Yes</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+
+
+      <script>
+      $(document).ready(function(){
+        $("#myInput").on("keyup", function() {
+          var value = $(this).val().toLowerCase();
+          $("#myTable tr").filter(function() {
+            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+          });
+        });
+      });
+      </script>
+      
+  </body>
+</html>

@@ -1,0 +1,164 @@
+
+{% load static %}
+
+{% block content %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Charts</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .chart-container {
+            width: 50%; / Adjust width as needed /
+            height: 400px; / Adjust height as needed /
+            margin: 20px auto; / Center the container /
+        }
+
+        .chart {
+            width: 100%; / Full width of the container /
+            height: 100%; / Full height of the container /
+        }
+    </style>
+</head>
+<body>
+    
+        {% comment %} <div class='row'>
+            
+            <div class="col-md-sm-6">
+                <h2>Events per Location (Bar Chart)</h2>
+                <canvas id="eventsPerLocationBarChart"></canvas>
+                <h2>Event Durations Over Time (Line Chart)</h2>
+                <canvas id="eventDurationLineChart"></canvas>
+        </div>
+                <div class="col-md-sm-6">
+                <h2>Event Distribution by Location (Pie Chart)</h2>
+                <canvas id="eventsByLocationPieChart"></canvas>
+                <h2>Events by Location (Radar Chart)</h2>
+                <canvas id="eventLocationRadarChart"></canvas>
+            </div> {% endcomment %}
+
+    {% comment %} </div> {% endcomment %}
+    <div class="row">
+            <div class="chart-container">
+                <canvas id="eventsPerLocationBarChart" class="chart"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="eventDurationLineChart" class="chart"></canvas>
+            </div>
+        </div>
+    <div class="row">
+            <div class="chart-container">
+                <canvas id="eventsByLocationPieChart" class="chart"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="eventLocationRadarChart" class="chart"></canvas>
+            </div>
+        </div>
+
+
+    <script>
+        // Bar Chart: Events per Location
+        const locationCtx = document.getElementById('eventsPerLocationBarChart').getContext('2d');
+        const eventsPerLocationBarChart = new Chart(locationCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ location_labels|safe }},
+                datasets: [{
+                    label: 'Number of Events',
+                    data: {{ location_counts|safe }},
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Line Chart: Event Durations Over Time
+        const durationCtx = document.getElementById('eventDurationLineChart').getContext('2d');
+        const eventDurationLineChart = new Chart(durationCtx, {
+            type: 'line',
+            data: {
+                labels: {{ event_dates|safe }},
+                datasets: [{
+                    label: 'Event Duration (Days)',
+                    data: {{ event_durations|safe }},
+                    fill: false,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Pie Chart: Event Distribution by Location
+        const locationPieCtx = document.getElementById('eventsByLocationPieChart').getContext('2d');
+        const eventsByLocationPieChart = new Chart(locationPieCtx, {
+            type: 'pie',
+            data: {
+                labels: {{ location_labels|safe }},
+                datasets: [{
+                    label: 'Event Locations',
+                    data: {{ location_counts|safe }},
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            }
+        });
+
+        // Radar Chart: Events by Location
+        const radarCtx = document.getElementById('eventLocationRadarChart').getContext('2d');
+        const eventLocationRadarChart = new Chart(radarCtx, {
+            type: 'radar',
+            data: {
+                labels: {{ location_labels|safe }},
+                datasets: [{
+                    label: 'Events by Location',
+                    data: {{ location_counts|safe }},
+                    backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                    borderColor: 'rgba(153, 102, 255, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    r: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+{% endblock content%}

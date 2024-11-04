@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% include 'snippets/head.html' %}
+    <style>
+        body{
+        background-color: #00838F;
+        }
+
+        .advanced{
+        text-decoration: none;
+        font-size: 15px;
+        font-weight: 500;
+        }
+
+        .btn-secondary,
+        .btn-secondary:focus,
+        .btn-secondary:active
+        {
+        color: #fff;
+        background-color: #00838f !important;
+        border-color: #00838f !important;
+        box-shadow: none;
+        }
+
+        .advanced{
+        color: #00838f !important;
+        }
+
+        .form-control:focus{
+        box-shadow: none;
+        border: 1px solid #00838f;
+        }
+    </style>
+</head>
+<body>
+    {% include 'snippets/navbar.html' %}
+    <div class="container">
+        <!-- ----------------------------------------search--------------------------------------------- -->
+
+        <div style="background-color: #fff;" class="mt-2">
+            <div class="row d-flex justify-content-center">
+                <div class="container">
+                    <form action="" method="post">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="row g-3 mt-2">
+                                    <div class="col-md-5">
+                                        <a data-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample" class="advanced">
+                                            Advance Search With Filters <i class="fa fa-angle-down"></i>
+                                        </a>
+                                        <div class="collapse" id="collapseExample">
+                                            <div class="card card-body">
+                                                <div class="row">
+                                                    <div class="col-md-4">
+                                                        <input type="text" placeholder="Property ID" class="form-control">
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <input type="text" class="form-control" placeholder="Search by MAP">
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <input type="text" class="form-control" placeholder="Search by Country">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+            
+                                    <div class="col-md-5">
+                                        <input type="text" class="form-control" placeholder="Enter address e.g. street, city and state or zip">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button class="btn btn-secondary btn-block">Search Results</button>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- -----------------------------------------table------------------------------------------------- -->
+        <table id="dtBasicExample" class="table table-striped nowrap" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Full name</th>
+                    <th>E-mail</th>
+                    <th>Phone</th>
+                    <th>Office</th>
+                    <th>Companies</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{user.username}}</td>
+                    <td>{{user.first_name}} {{user.last_name}}</td>
+                    <td>{{user.email}}</td>
+                    <td>{{user.user_info.Phone}}</td>
+                    <td>{{user.user_info.address}}</td>
+                    <td>
+                        <ul>
+                            {% for company in user.user_info.company.all %}
+                                <li>{{company}}</li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+                    <td><a href="javascript:void(0);" class="btn btn-warning" data-toggle="modal" data-target="#exampleModal">Edit</a></td>
+                </tr>
+                {% endfor %}
+                
+            </tbody>
+        
+        </table>
+
+
+
+
+
+        <!-- ========================================================== Modal ============================================= -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form action="">
+            <div class="form-row">
+                <div class="col">
+                <input type="text" class="form-control-sm" placeholder="First name">
+                </div>
+                <div class="col">
+                <input type="text" class="form-control-sm" placeholder="Last name">
+                </div>
+            </div><br>
+            <input class="form-control form-control-sm" type="text" placeholder="Email"><br>
+            <Select class="form-control form-control-sm">
+                <optgroup label="Unit">
+                    <option value="">Section</option>
+                </optgroup>
+            </Select><br>
+            
+            <input class="form-control form-control-sm" type="text" placeholder="Office"><br>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary">Save changes</button>
+        </div>
+      </div>
+    </div>
+</div>
+
+
+    </div>    
+
+    <script>
+        new DataTable('#example', {
+                layout: {
+                    top1: 'searchPanes'
+                }
+            });
+
+        // Basic example
+        $(document).ready(function () {
+        $('#dtBasicExample').DataTable({
+            "searching": true // false to disable search (or any other option)
+        });
+        $('.dataTables_length').addClass('bs-select');
+});
+        // Basic example
+        $(document).ready(function () {
+        $('#dtBasicExample').DataTable({
+            "paging": false // false to disable pagination (or any other option)
+        });
+        $('.dataTables_length').addClass('bs-select');
+        });
+    </script>
+
+</body>
+</html>

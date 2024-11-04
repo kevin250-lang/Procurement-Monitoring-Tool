@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+{% load static %}
+{% load humanize %}
+
+<html lang="en">
+<head>
+    {% include 'snippets/head.html' %}
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+      google.charts.load("current", {packages:["corechart"]});
+      google.charts.setOnLoadCallback(drawChartReg);
+      google.charts.setOnLoadCallback(drawChartEdcl);
+      google.charts.setOnLoadCallback(drawChartEucl);
+      google.charts.setOnLoadCallback(drawChartEuclStage);
+      google.charts.setOnLoadCallback(drawChartRegStage);
+      google.charts.setOnLoadCallback(drawChartEdclStage);
+      {% comment %} ===========================Eucl=========================== {% endcomment %}
+      function drawChartEucl() {
+        var data = google.visualization.arrayToDataTable({{eucl_info|safe}});
+      var options = {
+        pieSliceText: 'label',
+        title: 'EUCL Progress Chart',
+      };
+        var chart = new google.visualization.PieChart(document.getElementById('piecharteucl'));
+        chart.draw(data, options);
+      }
+
+      function drawChartEuclStage() {
+        var data = google.visualization.arrayToDataTable({{eucl_stages|safe}});
+      var options = {
+        pieSliceText: 'label',
+        title: 'EUCL Progress Chart',
+      };
+        var chart = new google.visualization.PieChart(document.getElementById('piecharteuclstage'));
+        chart.draw(data, options);
+      }
+
+      {% comment %} ===========================REG=========================== {% endcomment %}
+      function drawChartReg() {
+        var data = google.visualization.arrayToDataTable({{reg_info|safe}});
+        var options = {
+          pieSliceText: 'label',
+          title: 'REG Progress Chart',
+        };
+        var chart = new google.visualization.PieChart(document.getElementById('piechartreg'));
+        chart.draw(data, options);
+      }
+
+      function drawChartRegStage() {
+        var data = google.visualization.arrayToDataTable({{reg_stages|safe}});
+        var options = {
+          pieSliceText: 'label',
+          title: 'REG Progress Chart',
+        };
+        var chart = new google.visualization.PieChart(document.getElementById('piechartregstage'));
+        chart.draw(data, options);
+      }
+
+
+
+      {% comment %} ===========================EDCL=========================== {% endcomment %}
+      function drawChartEdcl() {
+        var data = google.visualization.arrayToDataTable({{edcl_info|safe}});
+        var options = {
+          pieSliceText: 'label',
+          title: 'EDCL Progress Chart',
+        };
+        var chart = new google.visualization.PieChart(document.getElementById('piechartedcl'));
+        chart.draw(data, options);
+      }
+
+      function drawChartEdclStage() {
+        var data = google.visualization.arrayToDataTable({{edcl_stages|safe}});
+        var options = {
+          pieSliceText: 'label',
+          title: 'EDCL Progress Chart',
+        };
+        var chart = new google.visualization.PieChart(document.getElementById('piechartedclstage'));
+        chart.draw(data, options);
+      }
+    </script>
+</head>
+<body>
+  {% include 'snippets/navbar.html' %}
+  <div class="px-5">
+
+    <div class="row">
+      <div class="col-lg-2">
+        <div class="list-group" id="list-tab" role="tablist">
+          <a class="list-group-item  active" href="{% url 'home' %}">
+            Over Companies
+          </a>
+          <a class="list-group-item" href="{% url 'progress' %}">
+            Progress Status
+          </a>
+          <a class="list-group-item" href="{% url 'departments' %}">
+            Departments
+          </a>
+        </div>
+      </div>
+
+
+      <div class="col-lg-10">
+        <div id="accordion">
+          <div class="card">
+            <div class="card-header" id="headingOne">
+              <h5 class="mb-0">
+                <button class="btn btn-link" data-toggle="collapse" data-target="#collapseChart" aria-expanded="true" aria-controls="collapseChart">
+                  Charts
+                </button>
+              </h5>
+            </div>
+            <div id="collapseChart" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
+              <div class="card-body">
+                {% comment %} ========================================= charts ======================================== {% endcomment %}
+                {% if reg_year_plan %}
+                <div class="row">
+                  <div class="col-lg-6">
+                    <div id="piechartreg" style=""></div>
+                  </div>
+                  <div class="col-lg-6">
+                    <div id="piechartregstage" style=""></div>
+                  </div>
+                </div><hr>
+                {% endif %}
+                
+                {% if edcl_year_plan %}
+                <div class="row">
+                  <div class="col-lg-6">
+                    <div id="piechartedcl" style=""></div>
+                  </div>
+                  <div class="col-lg-6">
+                    <div id="piechartedclstage" style=""></div>
+                  </div>
+                </div><hr>
+                {% endif %}
+
+                {% if eucl_year_plan %}
+                <div class="row">
+                  <div class="col-lg-6">
+                    <div id="piecharteucl" ></div>
+                  </div>
+                  <div class="col-lg-6">
+                    <div id="piecharteuclstage" ></div>
+                  </div>
+                </div><hr>
+                {% endif %}
+                <div class="row">
+                  <div class="col-lg-6">
+                    <div class="shadow-sm mb-2 bg-body bg-white rounded py-3 px-3" id="chart_div">
+                  </div>
+                </div>
+                {% comment %} ======================================= end of charts =================================== {% endcomment %}
+  
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header" id="headingTwo">
+              <h5 class="mb-0">
+                <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTables" aria-expanded="false" aria-controls="collapseTables">
+                  Tables
+                </button>
+              </h5>
+            </div>
+            <div id="collapseTables" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
+              <div class="card-body">
+
+                  <div class="tab-pane fade show" id="list-home-Performance" role="tabpanel" aria-labelledby="list-home-list">
+                    <div class="row">
+                        {% if reg_year_plan %}
+                        <div class="col-lg-4 mb-2">
+                          <div class="card border-primary" >
+                            <div class="card-header">
+                              {% if request.user.user_info.company.first.name == reg_year_plan.company.name or request.user.user_info.company.last.name == reg_year_plan.company.name %}
+                                <a class="" href="{% url 'procurement_plan_detail' reg_year_plan.pk %}">
+                                  <b>{{reg_year_plan.company.name}}</b>
+                                </a>
+                              {% else %}
+                                <b>{{reg_year_plan.company.name}}</b>
+                              {% endif%}
+                            </div>
+                            <div class="card-body">
+                              <h5 class="card-title">
+                              </h5>
+                              <p class="card-text">
+                                <ul class="m-0">
+                                  {% for stage in reg_year_plan.over_stages_procurement.all %}
+                                    <li class="ml-0"> {{stage.stage}}: 
+                                      {% if request.user.is_authenticated %}
+                                        {% if request.user.user_info.company.first == reg_year_plan.company or request.user.user_info.company.last == reg_year_plan.company %}
+                                          <a href="{% url 'overall_stage_detail' stage.pk %}">{{stage.plans_on_stage.count}}</a> 
+                                        {% else %}
+                                          {{stage.plans_on_stage.count}}
+                                        {% endif %}
+                                      {% else %} {% comment %} ({{stage.percent}}%) {% endcomment %}
+                                        {{stage.plans_on_stage.count}}
+                                      {% endif %}
+    
+                                      {% for method in dur.method.the_method.all %}
+                                      {{dur.method}} 
+                                        {% if method.stage == stage and method.method == dur.method.first %}
+                                        | <span class="text-success">{{method.method.average}}</span>
+                                        {% endif %}
+                                      {%endfor%}</li>
+                                  {% endfor%}
+                                  <li><span class="text-danger"><b>Late to start:</b><a href="{% url 'late_tenders' reg_year_plan.pk %}">|  <u>{{reg_late_tenders.count}}</u></a></span></li>
+                                  <li><span class="text-primary">Today: <a href="{% url 'today_tenders' reg_year_plan.pk %}">| <u>{{reg_today_tenders.count}} </u></a></span></li>
+                                  <li><span class="text-success">To Comes: <a href="{% url 'to_come_tenders' reg_year_plan.pk %}"> <u>{{reg_to_comes.count}} </u></a></span></li>
+                                </ul>
+                              </p>
+                            </div>
+                            <div class="card-footer">
+                              <span class="float-left">Tenders {{reg_year_plan.plan_tenders.count}} </span>
+                            </div>
+                          </div>
+                        </div>
+                      {% endif %}
+
+                      {% if edcl_year_plan %}
+                        <div class="col-lg-4 mb-2">
+                          <div class="card border-primary" >
+                            <div class="card-header">
+                              {% if request.user.user_info.company.first.name == edcl_year_plan.company.name or request.user.user_info.company.last.name == reg_year_plan.company.name %}
+                              <a class="" href="{% url 'procurement_plan_detail' edcl_year_plan.pk %}">
+                                  <b>{{edcl_year_plan.company.name}}</b>
+                                </a>
+                              {% else %}
+                                <b>{{edcl_year_plan.company.name}}</b>
+                              {% endif%}
+                            </div>
+                            <div class="card-body">
+                              <h5 class="card-title">
+                              </h5>
+                              <p class="card-text">
+                                <ul class="m-0">
+                                  {% for stage in edcl_year_plan.over_stages_procurement.all %}
+                                    <li class="ml-0"> {{stage.stage}}: 
+                                      {% if request.user.is_authenticated %}
+                                        {% if request.user.user_info.company.first == edcl_year_plan.company or request.user.user_info.company.last == edcl_year_plan.company %}
+                                          <a href="{% url 'overall_stage_detail' stage.pk %}">{{stage.plans_on_stage.count}}</a> 
+                                        {% else %}
+                                          {{stage.plans_on_stage.count}}
+                                        {% endif %}
+                                      {% else %} {% comment %} ({{stage.percent}}%) {% endcomment %}
+                                        {{stage.plans_on_stage.count}}
+                                      {% endif %}
+    
+                                      {% for method in dur.method.the_method.all %}
+                                      {{dur.method}} 
+                                        {% if method.stage == stage and method.method == dur.method.first %}
+                                        | <span class="text-success">{{method.method.average}}</span>
+                                        {% endif %}
+                                      {%endfor%}</li>
+                                  {% endfor%}
+                                  <li><span class="text-danger"><b>Late to start:</b><a href="{% url 'late_tenders' edcl_year_plan.pk %}">|  <u>{{edcl_late_tenders.count}}</u></a></span></li>
+                                  <li><span class="text-primary">Today: <a href="{% url 'today_tenders' edcl_year_plan.pk %}">| <u>{{edcl_today_tenders.count}} </u></a></span></li>
+                                  <li><span class="text-success">To Comes: <a href="{% url 'to_come_tenders' edcl_year_plan.pk %}"> <u>{{edcl_to_comes.count}} </u></a></span></li>
+                                </ul>
+                              </p>
+                            </div>
+                            <div class="card-footer">
+                                <span class="float-left">Tenders {{edcl_year_plan.plan_tenders.count}} </span>
+                                {% comment %} <span class="text-danger float-right"><a href="{% url 'late_tenders' edcl_year_plan.pk %}">|  <u>{{edcl_late_tenders.count}}</u></a></span>
+                                <span class="text-primary float-right"><a href="{% url 'today_tenders' edcl_year_plan.pk %}">| <u>{{edcl_today_tenders.count}} </u></a></span>
+                                <span class="text-success float-right"><a href="{% url 'to_come_tenders' edcl_year_plan.pk %}"> <u>{{edcl_to_comes.count}} </u></a></span> {% endcomment %}
+                            </div>
+                          </div>
+                        </div>
+                      {% endif %}
+
+
+                      {% if eucl_year_plan %}
+                        <div class="col-lg-4 mb-2">
+                          <div class="card border-primary" >
+                            <div class="card-header">
+                              {% if request.user.user_info.company.first.name == eucl_year_plan.company.name or request.user.user_info.company.last.name == reg_year_plan.company.name %}
+                              <a class="" href="{% url 'procurement_plan_detail' eucl_year_plan.pk %}">
+                                  <b>{{eucl_year_plan.company.name}}</b>
+                                </a>
+                              {% else %}
+                                <b>{{eucl_year_plan.company.name}}</b>
+                              {% endif%}
+                            </div>
+                            <div class="card-body">
+                              <h5 class="card-title">
+                              </h5>
+                              <p class="card-text">
+                                <ul class="m-0">
+                                  {% for stage in eucl_year_plan.over_stages_procurement.all %}
+                                    <li class="ml-0"> {{stage.stage}}: 
+                                      {% if request.user.is_authenticated %}
+                                        {% if request.user.user_info.company.first == eucl_year_plan.company or request.user.user_info.company.last == eucl_year_plan.company %}
+                                          <a href="{% url 'overall_stage_detail' stage.pk %}">{{stage.plans_on_stage.count}}</a> 
+                                        {% else %}
+                                          {{stage.plans_on_stage.count}}
+                                        {% endif %}
+                                      {% else %} {% comment %} ({{stage.percent}}%) {% endcomment %}
+                                        {{stage.plans_on_stage.count}}
+                                      {% endif %}
+    
+                                      {% for method in dur.method.the_method.all %}
+                                      {{dur.method}} 
+                                        {% if method.stage == stage and method.method == dur.method.first %}
+                                        | <span class="text-success">{{method.method.average}}</span>
+                                        {% endif %}
+                                      {%endfor%}</li>
+                                  {% endfor%}
+                                  <li><span class="text-danger"><b>Late to start: </b><a href="{% url 'late_tenders' eucl_year_plan.pk %}">  <u>{{eucl_late_tenders.count}}</u></a></span></li>
+                                  <li><span class="text-primary"><b>Today: </b><a href="{% url 'today_tenders' eucl_year_plan.pk %}"> <u>{{eucl_today_tenders.count}} </u></a></span></li>
+                                  <li><span class="text-success"><b>Forthcoming: </b><a href="{% url 'to_come_tenders' eucl_year_plan.pk %}"> <u>{{eucl_to_comes.count}} </u></a></span></li>
+                                </ul>
+                              </p>
+                            </div>
+                            <div class="card-footer">
+                                <span class="float-left">Tenders {{eucl_year_plan.plan_tenders.count}} </span>
+                                {% comment %} <span class="text-danger float-right"><a href="{% url 'late_tenders' eucl_year_plan.pk %}">|  <u>{{eucl_late_tenders.count}}</u></a></span>
+                                <span class="text-primary float-right"><a href="{% url 'today_tenders' eucl_year_plan.pk %}">| <u>{{eucl_today_tenders.count}} </u></a></span>
+                                <span class="text-success float-right"><a href="{% url 'to_come_tenders' eucl_year_plan.pk %}"> <u>{{eucl_to_comes.count}} </u></a></span> {% endcomment %}
+                            </div>
+                          </div>
+                        </div>
+                      {% endif %}
+                    </div>    
+                  </div>
+
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+
+
+
+
+    </div><br><br>
+
+  </div>
+
+
+
+  {% comment %} ==================== google chart =================== {% endcomment %}
+<script>
+  google.charts.load('current', {'packages':['bar']});
+  google.charts.setOnLoadCallback(drawChart);
+
+  function drawChart() {
+    var data = google.visualization.arrayToDataTable({{companies|safe}});
+
+    var options = {
+      chart: {
+        title: 'BUDGETs',
+        subtitle: 'REG/EDCL/EUCL',
+      },
+      bars: 'horizontal', // Required for Material Bar Charts.
+      hAxis: {format: 'decimal'},
+      height: 250,
+      colors: ['#df041c', '#0e921e', '#0628b2']
+    };
+
+    var chart = new google.charts.Bar(document.getElementById('chart_div'));
+
+    chart.draw(data, google.charts.Bar.convertOptions(options));
+
+    var btns = document.getElementById('btn-group');
+
+    btns.onclick = function (e) {
+
+      if (e.target.tagName === 'BUTTON') {
+        options.hAxis.format = e.target.id === 'none' ? '' : e.target.id;
+        chart.draw(data, google.charts.Bar.convertOptions(options));
+      }
+    }
+  }
+</script>
+    
+</body>
+</html>

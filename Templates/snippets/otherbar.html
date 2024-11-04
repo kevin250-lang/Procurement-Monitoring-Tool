@@ -1,0 +1,45 @@
+<div class="col-lg-3" >
+    <div class="row">
+        {% if sents %}
+            <div class="col-12 text-center"><b>Sent Items</b></div>
+        {% elif inboxes %}
+            <div class="col-12 text-center"><b>Inbox</b></div>
+        {% elif completed %}
+            <div class="col-12 text-center"><b>Completed</b></div>
+        {% endif %}
+    </div>
+    <div class="list-group" style="overflow-y:scroll;">
+        {% if sents %}
+            {% for sent in sents %}
+                <a href="{% url 'sent_ticket_detail' sent.id %}" class="list-group-item list-group-item-action">
+                    <small><b>{{sent.created_by.user.first_name}} {{sent.created_by.user.last_name|truncatechars:3|upper}}</b> : {{sent.title|truncatewords:3}}</small>
+                </a>
+            {% endfor %}
+
+        {% elif inboxes %}
+            {% for ticket in inboxes %}
+                <a href="{% url 'inbox_ticket_detail' ticket.id %}" class="list-group-item list-group-item-action" >
+                    <small><b>{{ticket.created_by.user.first_name}} {{ticket.created_by.user.last_name|truncatechars:3|upper}}</b> : {{ticket.title}}</small>
+                </a>
+            {% endfor %}
+
+        {% elif actives %}
+            {% for ticket in actives %}
+                <a href="{% url 'active_ticket_detail' ticket.id %}" class="list-group-item list-group-item-action" >
+                    <small><b>{{ticket.created_by.user.first_name}} {{ticket.created_by.user.last_name|truncatechars:3|upper}}</b> : {{ticket.title}}</small>
+                </a>
+            {% endfor %}
+
+        {% elif completed %}
+            {% for ticket in completed %}
+                <a href="{% url 'completed_ticket_detail' ticket.id %}" class="list-group-item list-group-item-action" >
+                    <small><b>{{ticket.created_by.user.first_name}} {{ticket.created_by.user.last_name|truncatechars:3|upper}}</b> : {{ticket.title}}</small>
+                </a>
+            {% endfor %}
+
+        {% else %}
+            <h5>No Ticket yet</h5>
+            
+        {% endif %}
+    </div>
+</div>

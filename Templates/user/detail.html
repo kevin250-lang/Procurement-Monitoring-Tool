@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    {% include 'snippets/head.html'%}
+    <style>
+        .reply p{padding:0; margin:0;}
+        .reply img{max-width: 90%; object-fit:scale-down;}
+        .request img{padding:0; margin:0; max-width: 90%; object-fit:scale-down;}
+        .request p{padding:0; margin:0;}
+        .request h1{padding:0; margin:0;}
+    </style>
+</head>
+
+<body>
+{% include 'snippets/navbar.html' %}
+<div class="container">
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="row">
+                <div class="col-lg-12" style="max-hegiht:250 px;"><img src="{{user.user_info.profile.url}}" alt="{{user.user_info.profile.url}}"></div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="row">
+                <div class="col">
+                    <p><b>First Name:</b> {{user.first_name}}</p>
+                    <p><b>Last Name:</b> {{user.last_name}}</p>
+                    <p><b>Email:</b> {{user.email}}</p>
+                    <p><b>Username:</b> {{user.username}}</p>
+                    
+                </div>
+                <div class="col">
+                    <p><b>Phone:</b> {{user.user_info.Phone}}</p>
+                    <p><b>Address:</b> {{user.user_info.address}}</p>
+                    <p><b>Company:</b>
+                        <ol>
+                            {% for company in user.user_info.company.all %}
+                                <li>{{company}}</li>
+                            {% endfor %}
+                        </ol>
+                    </p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">first lower div</div>
+                <div class="col">Second lower div</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'ckeditor_django_5/script/ckeditor.js' %}"></script>
+<script>
+    CKEDITOR.ClassicEditor
+        .create( document.querySelector( '#classic-editor' ) )
+        .catch( err => {
+            console.error( err.stack );
+        } );
+
+    CKEDITOR.InlineEditor
+        .create( document.querySelector( '#inline-editor' ) )
+        .catch( err => {
+            console.error( err.stack );
+        } );
+</script>
+
+
+</body>
+</html>

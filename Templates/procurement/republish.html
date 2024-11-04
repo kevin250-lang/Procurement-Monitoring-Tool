@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+{% load static %}
+
+<html lang="en">
+<head>
+    {% include 'snippets/head.html' %}
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" integrity="sha512-r22gChDnGvBylk90+2e/ycr3RVrDi8DIOkIGNhJlKfuyQM4tIRAI062MaV8sfjQKYVGjOBaZBOA87z+IhZE9DA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script defer src="{% static 'js/excel-files.js' %}"></script>
+</head>
+<body>
+  {% include 'snippets/navbar.html' %}
+  <div class="container">
+    <div class="row">
+      <div class="col-3">
+        <b>Activity ID: </b>{{tender.activity_id }} <br>
+        <b>Estimated Cost: </b>{{tender.estimated_cost}} <br>
+        <b>Source Of Funds: </b>{{tender.source_of_fund}} <br>
+        <b>Tendering Method: </b>{{tender.tendering_method }} <br>
+      </div>
+      <div class="col">
+        <b>Planned Tender Date: </b>{{tender.planned_tender_doc_preparation }} 
+        {% for procedure in tender.workon.all reversed %}
+          {% if procedure.stage.title == "TENDERING" %}
+          | <span class="text-primary">{{procedure.closed_date|truncatechars:12}}</span>
+          {% endif %}
+        {% endfor %}
+        <br>
+        {% if tender.tender_report.first.actual_tender_date %}
+        <b>Actual Tender Date: </b>{{tender.tender_report.first.actual_tender_date}} <br>
+        {% endif %}
+  
+        <b>Planned Publication Date: </b>{{tender.planned_publication_date}}
+        {% for procedure in tender.workon.all reversed %}
+          {% if procedure.stage.title == "PUBLICATION" %}
+          | <span class="text-primary">{{procedure.closed_date|truncatechars:12}}</span>
+          {% endif %}
+        {% endfor %}<br>
+        {% if tender.tender_report.first.actual_publication_date %}
+        <b>Actual Publication Date: </b>{{tender.tender_report.first.actual_publication_date}} <br>
+        {% endif %}
+        
+        <b>Planned Bid Opening Date:</b>{{tender.planned_bid_opening_date}}
+        {% for procedure in tender.workon.all reversed %}
+          {% if procedure.stage.title == "OPENING" %}
+          | <span class="text-primary">{{procedure.closed_date|truncatechars:12}}</span>
+          {% endif %}
+        {% endfor %}<br>
+        {% if tender.tender_report.first.actual_bid_opening_date %}
+        <b>Actual Bid Opening Date: </b>{{tender.tender_report.first.actual_bid_opening_date}} <br>
+        {% endif %}
+  
+        <b>Planned Start Evaluation: </b>{{tender.planned_start_evaluation }} <br>
+        {% if tender.tender_report.first.actual_start_evaluation %}
+        <b>Actual Start Evaluation: </b>{{tender.tender_report.first.actual_start_evaluation}} <br>
+        {% endif %}
+      </div>
+      <div class="col">
+        <b>Planned End Evaluation: </b>{{tender.planned_end_evaluation}} 
+        {% for procedure in tender.workon.all reversed %}
+          {% if procedure.stage.title == "EVALUATION" %}
+          | <span class="text-primary">{{procedure.closed_date|truncatechars:12}}</span>
+          {% endif %}
+        {% endfor %}<br>
+        {% if tender.tender_report.first.actual_end_evaluation %}
+        <b>Actual End Evaluation: </b>{{tender.tender_report.first.actual_end_evaluation}} <br>
+        {% endif %}
+  
+        <b>Planned Provision Notification Date: </b>{{tender.planned_provisional_notification_date}}
+        {% for procedure in tender.workon.all reversed %}
+          {% if procedure.stage.title == "NOTIFICATION" %}
+            | <span class="text-primary">{{procedure.closed_date|truncatechars:12}}</span>
+          {% endif %}
+        {% endfor %}<br>
+        {% if tender.tender_report.first.actual_provisional_notification_date %}
+        <b>Actual Provision Notification Date: </b>{{tender.tender_report.first.actual_provisional_notification_date}} <br>
+        {% endif %}
+  
+        <b>Planned Contract Signing Date: </b>{{tender.planned_contract_signing_date}} 
+        {% for procedure in tender.workon.all reversed %}
+          {% if procedure.stage.title == "CONTRACT" %}
+            {% if procedure.status == "CLOSED" %}
+              | <span class="text-primary">{{procedure.closed_date|truncatechars:12}}</span>
+            {% endif %}
+          {% endif %}
+        {% endfor %}<br>
+        {% if tender.tender_report.first.actual_contract_signing_date %}
+        <b>Actual Contract Signing Date: </b>{{tender.tender_report.first.actual_contract_signing_date}} <br>
+        {% endif %}
+        <b>status:</b> {{tender.activity_status}}
+  
+      </div>
+      
+    </div>
+  </div>
+    <hr>
+  <div class="container">
+    <form action="{% url 'republish' tender.pk %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-row align-items-center">
+
+            <div class="col m-1">
+                <label class="sr-only" for="inlineFormInputGroupUsername">Department</label>
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <div class="input-group-text">Department</div>
+                    </div>
+                    <select class="form-control" name="department" id="inlineFormInputName" aria-label=".form-select-lg example" required>
+                        <option value="{{tender.department.id}}">{{tender.department.name}}</option>
+                        {% for department in departments%}
+                            <option value="{{department.id}}">{{department.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="col m-1">
+                <label class="sr-only" for="inlineFormInputGroupUsername">Method</label>
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <div class="input-group-text">Method</div>
+                    </div>
+                    <select class="form-control" name="method" id="inlineFormInputName" aria-label=".form-select-lg example" required>
+                        <option value="{{tender.tendering_method.id}}">{{tender.tendering_method }}</option>
+                        {% for method in methods%}
+                            <option value="{{method.id}}">{{method.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+        </div> <br>
+
+        <div class="form-row align-items-center">
+            <div class="col m-1">
+                <label class="sr-only" for="inlineFormInputGroupUsername">Source Of Funds</label>
+                <div class="input-group">
+                <div class="input-group-prepend">
+                    <div class="input-group-text">Source Of Funds</div>
+                </div>
+                    <input type="text" class="form-control" name="source" id="inlineFormInputName" value="{{tender.source_of_fund}}" required>
+                </div>
+            </div>
+
+            <div class="col m-1">
+                <label class="sr-only" for="inlineFormInputGroupUsername">Estimated Cost</label>
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <div class="input-group-text">Estimated Cost</div>
+                  </div>
+                  <input type="number" class="form-control" name="estim_cost" id="inlineFormInputName" value={{tender.estimated_cost}} required>
+                </div>
+            </div>
+        </div> <br>
+
+        <div class="form-row align-items-center">
+            <div class="col m-1">
+                <label class="sr-only" for="inlineFormInputGroupUsername">Doc Preparation</label>
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <div class="input-group-text">Doc Preparation</div>
+                  </div>
+                  <input type="date" class="form-control" name="doc_preparation" id="inlineFormInputName" min="{{now}}">
+                </div>
+            </div>
+          
+            <div class="col m-1">
+                <label class="sr-only" for="inlineFormInputGroupUsername">Publication</label>
+                <div class="input-group">
+                <div class="input-group-prepend">
+                    <div class="input-group-text">Publication</div>
+                </div>
+                <input type="date" class="form-control" name="publication" id="inlineFormInputName" min="{{now}}">
+                </div>
+            </div>
+          
+        </div> <br>
+
+        <div class="form-row align-items-center">
+            <div class="col m-1">
+                <label class="sr-only" for="inlineFormInputGroupUsername">Opening</label>
+                <div class="input-group">
+                <div class="input-group-prepend">
+                    <div class="input-group-text">Opening</div>
+                </div>
+                <input type="date" class="form-control" id="inlineFormInputName" name="opening" min="{{now}}">
+                </div>
+            </div>
+
+            <div class="col m-1">
+                <label class="sr-only" for="inlineFormInputGroupUsername">Start Evaluation</label>
+                <div class="input-group">
+                <div class="input-group-prepend">
+                    <div class="input-group-text">Start Evaluation</div>
+                </div>
+                <input type="date" class="form-control" id="inlineFormInputName" name="start_eval" min="{{now}}">
+                </div>
+            </div>
+
+            <div class="col m-1">
+                <label class="sr-only" for="inlineFormInputGroupUsername">End Evaluation</label>
+                <div class="input-group">
+                <div class="input-group-prepend">
+                    <div class="input-group-text">End Evaluation</div>
+                </div>
+                <input type="date" class="form-control" id="inlineFormInputName" name="end_eval" min="{{now}}">
+                </div>
+            </div>
+        </div> <br>
+
+        <div class="form-row align-items-center">
+            <div class="col m-1">
+                <label class="sr-only" for="inlineFormInputGroupUsername">Provision Notification</label>
+                <div class="input-group">
+                <div class="input-group-prepend">
+                    <div class="input-group-text">Provision Notification</div>
+                </div>
+                <input type="date" class="form-control" id="inlineFormInputName" name="prov_noti" min="{{now}}">
+                </div>
+            </div>
+
+            <div class="col m-1">
+                <label class="sr-only" for="inlineFormInputGroupUsername">Final Notification</label>
+                <div class="input-group">
+                <div class="input-group-prepend">
+                    <div class="input-group-text">Final Notification</div>
+                </div>
+                <input type="date" class="form-control" id="inlineFormInputName" name="fin_noti" min="{{now}}">
+                </div>
+            </div>
+
+            <div class="col m-1">
+                <label class="sr-only" for="inlineFormInputName">Contract Signing</label>
+                <div class="input-group">
+                <div class="input-group-prepend">
+                    <div class="input-group-text">Contract Signing</div>
+                </div>
+                <input type="date" class="form-control" id="inlineFormInputName" name="contract_sign" min="{{now}}">
+                </div>
+            </div>
+
+        </div>
+
+        <div class="form-row align-items-center">
+            <div class="col-auto m-1">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="approved" id="autoSizingCheck2" required>
+                  <label class="form-check-label" for="autoSizingCheck2">
+                    Republish
+                  </label>
+                </div>
+            </div>
+        </div> <br>
+        <div class="col-auto m-1">
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+
+    </form>
+  </div>
+
+</body>
+</html>

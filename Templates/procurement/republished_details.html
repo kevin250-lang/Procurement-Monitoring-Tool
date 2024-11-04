@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+{% load static %}
+
+<html lang="en">
+<head>
+    {% include 'snippets/head.html' %}
+ 
+</head>
+<body>
+
+<!-- Navbar -->
+{% include 'snippets/navbar.html' %}
+
+<!-- Second Container -->
+<div class="container-fluid bg-2 text-center">
+  <h3 class="margin">{{tender.department}}</h3>
+  <p class="text-dark my-4"><b>Tender Name:</b> {{tender.activity_description}}</p>
+</div>
+<div class="container">
+  <div class="row">
+    <div class="col-3">
+      <b>Activity ID: </b>{{tender.activity_id }} <br>
+      <b>Estimated Cost: </b>{{tender.estimated_cost}} <br>
+      <b>Source Of Funds: </b>{{tender.source_of_fund}} <br>
+      <b>Tendering Method: </b>{{tender.tendering_method }} <br>
+    </div>
+    <div class="col">
+      <b>Planned Tender Date: </b>{{tender.planned_tender_date }} 
+      {% for procedure in tender.workon.all reversed %}
+        {% if procedure.stage.title == "TENDERING" %}
+        | <span class="text-primary">{{procedure.closed_date|truncatechars:12}}</span>
+        {% endif %}
+      {% endfor %}
+      <br>
+      {% if tender.republished_tender_report.first.actual_tender_date %}
+      <b>Actual Tender Date: </b>{{tender.republished_tender_report.first.actual_tender_date}} <br>
+      {% endif %}
+
+      <b>Planned Publication Date: </b>{{tender.planned_publication_date}}
+      {% for procedure in tender.workon.all reversed %}
+        {% if procedure.stage.title == "PUBLICATION" %}
+        | <span class="text-primary">{{procedure.closed_date|truncatechars:12}}</span>
+        {% endif %}
+      {% endfor %}<br>
+      {% if tender.republished_tender_report.first.actual_publication_date %}
+      <b>Actual Publication Date: </b>{{tender.republished_tender_report.first.actual_publication_date}} <br>
+      {% endif %}
+      
+      <b>Planned Bid Opening Date:</b>{{tender.planned_bid_opening_date}}
+      {% for procedure in tender.workon.all reversed %}
+        {% if procedure.stage.title == "OPENING" %}
+        | <span class="text-primary">{{procedure.closed_date|truncatechars:12}}</span>
+        {% endif %}
+      {% endfor %}<br>
+      {% if tender.republished_tender_report.first.actual_bid_opening_date %}
+      <b>Actual Bid Opening Date: </b>{{tender.republished_tender_report.first.actual_bid_opening_date}} <br>
+      {% endif %}
+
+      <b>Planned Start Evaluation: </b>{{tender.planned_start_evaluation }} <br>
+      {% if tender.republished_tender_report.first.actual_start_evaluation %}
+      <b>Actual Start Evaluation: </b>{{tender.republished_tender_report.first.actual_start_evaluation}} <br>
+      {% endif %}
+    </div>
+    <div class="col">
+      <b>Planned End Evaluation: </b>{{tender.planned_end_evaluation}} 
+      {% for procedure in tender.workon.all reversed %}
+        {% if procedure.stage.title == "EVALUATION" %}
+        | <span class="text-primary">{{procedure.closed_date|truncatechars:12}}</span>
+        {% endif %}
+      {% endfor %}<br>
+      {% if tender.republished_tender_report.first.actual_end_evaluation %}
+      <b>Actual End Evaluation: </b>{{tender.republished_tender_report.first.actual_end_evaluation}} <br>
+      {% endif %}
+
+      <b>Planned Provision Notification Date: </b>{{tender.planned_provisional_notification_date}}
+      {% for procedure in tender.workon.all reversed %}
+        {% if procedure.stage.title == "NOTIFICATION" %}
+          | <span class="text-primary">{{procedure.closed_date|truncatechars:12}}</span>
+        {% endif %}
+      {% endfor %}<br>
+      {% if tender.republished_tender_report.first.actual_provisional_notification_date %}
+      <b>Actual Provision Notification Date: </b>{{tender.republished_tender_report.first.actual_provisional_notification_date}} <br>
+      {% endif %}
+
+      <b>Planned Contract Signing Date: </b>{{tender.planned_contract_signing_date}} 
+      {% for procedure in tender.workon.all reversed %}
+        {% if procedure.stage.title == "CONTRACT" %}
+          {% if procedure.status == "CLOSED" %}
+            | <span class="text-primary">{{procedure.closed_date|truncatechars:12}}</span>
+          {% endif %}
+        {% endif %}
+      {% endfor %}<br>
+      {% if tender.republished_tender_report.first.actual_contract_signing_date %}
+      <b>Actual Contract Signing Date: </b>{{tender.republished_tender_report.first.actual_contract_signing_date}} <br>
+      {% endif %}
+
+    </div>
+    
+  </div>
+</div>
+
+<hr>
+<div class="container">
+  <div class="col">
+    <p class="text-center">
+      {% if tender.canceled != time_zero and tender.activity_status == 'Canceled' %}
+        <span class="text-danger"><b>Canceled Tender</b></span> | 
+        <a href="{% url 'republish' tender.id %}?next={{ request.path }}" class="btn btn-outline-info">Republish</a>
+      {% elif tender.workon.last.stage.title == tender.tendering_method.method_duration.all.last.stage.title and tender.workon.last.closed_date != None %}
+        <span class="text-success"><b>Closed Tender</b></span>
+      {% else %}
+        {% if request.user.is_authenticated %}
+          Procedure <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalEdit{{tender.id}}"><i class="fa fa-paper-plane"></i></button>
+          <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#exampleCancel">
+            Cancel
+          </button>
+        {% else %}
+          In_Progress...
+        {% endif %} 
+      {% endif%}
+    </p>
+  </div>
+</div>
+<hr>
+
+<!-- Third Container (Grid) -->
+<div class="container-fluid bg-3 text-center">    
+  <h5 class="margin">All procedures it passed through</h5><br>
+  <div class="row">
+    {% for procedure in tender.workon.all reversed %}
+    <div class="col-sm-4 py-2 border">
+      <!-- <h6>{% if procedure.process.stage %}{{procedure.process.stage.title}}{% else %}Pending{% endif %}</h6> -->
+      <b>{{procedure.stage.title}}</b><br>
+      {% if procedure.procedure.first %}
+      <p class="my-3">
+        {% for file in procedure.procedure.all %}
+        <a href="{{file.files.url}}">{{file.files|cut:'document/procedure/'}}</a>
+        {% endfor %}
+      </p>
+      {% endif %}
+      
+      <p>
+        <small><b>Start Date:</b></small> {{procedure.timestamp|date:"SHORT_DATE_FORMAT"}} <br>
+        <small><b>Close Date:</b></small> {{procedure.closed_date}}
+      </p>
+      <div class="row">
+        <div class="col-12 px-5" >
+          <hr>
+          <small><b>Duration:</b></small>
+          {% if tender.tendering_method.method_duration.all.first %} 
+            {% for method in tender.tendering_method.method_duration.all %}
+              {% if  method.stage.title == procedure.stage.title %}
+                {{method.delay}} |  <span class="text-primary">{{procedure.timestamp|timesince:procedure.closed_date}}</span>
+                <!-- | {{procedure.time_taken}} -->
+                {% if procedure.late %}
+                  <span class="text-danger">| {{procedure.late|ljust:"10"}}</span>
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+
+
+<!-- Modal for editing item -->
+<div class="modal fade" id="exampleModalEdit{{tender.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel"><b>{{tender.company_name}}</b> {{tender.tender_name|upper}}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form action="{% url 'republished_tender_update' tender.procurement_doc.id %}?next={{ request.path }}" method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          
+            
+            <input type="hidden" value="{{tender.id}}" name="tender">
+            {% comment %} <label for="DatetimeLocal">Close Date</label>
+            <input type="datetime-local" class="form-control form-control-sm" value="{{tender.close_date}}" name="date" id="DatetimeLocal"><br>
+            {% endcomment %}
+            <small>
+              <div class="input-group">
+                <select class="form-control form-select" name="process" id="inputGroupSelect01">
+                  {% if tender.workon.last.stage.title == tender.tendering_method.method_duration.all.last.stage.title and not tender.workon.last.closed_date %}
+                      {% comment %} <option value="previous"><b>Previous Stage</b></option> {% endcomment %}
+                      <option value="current" selected disabled>{{tender.workon.last.stage.title}}</option>
+                      <option value="next"><b>Close Tender</b></option>
+                  {% elif not tender.workon.last %}
+                      <option value="next"><b>{{tender.tendering_method.method_duration.all.first.stage.title}}</b></option>
+                  {% elif tender.workon.last.stage.title != tender.tendering_method.method_duration.all.last.stage.title %}
+                      <option value="current" selected disabled>{{tender.workon.last.stage.title}}</option>
+                      <option value="next"><b>Next Stage</b></option>
+                  {% else %}
+                      <option value="next" selected>{{stage.title}}</option>
+                  {% endif %}
+                </select>
+              </div>
+            </small>
+            <label for="files"></label>
+            <input type="file" class="form-control" name="files" id="files" multiple>
+          <button type="submit" class="btn btn-primary my-3">Confirm</button>
+        </form>
+      </div>
+      
+    </div>
+  </div>
+</div>
+
+
+<!-- Tender Canceling Modal -->
+<div class="modal fade" id="exampleCancel" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Are you sure you want to delete this tender</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        {{tender.activity_description}}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-success" data-dismiss="modal">No</button>
+        <a href="{% url 'cancel_tender' tender.id %}?next={{ request.path }}" class="btn btn-danger">Yes</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
