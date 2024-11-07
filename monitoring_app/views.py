@@ -17,6 +17,7 @@ from monitoring_app.models import *
 from django.contrib import messages
 from tablib import Dataset
 from monitoring_app.forms import *
+# from monitoring_app.usy import *
 
 
 def home(request):
@@ -402,7 +403,7 @@ def register_user(request):
                 }
                 return render(request, 'user/register.html',content)
             else:
-                print(email)
+                # print(email)
                 if email.endswith(email_exten_eucl) or email.endswith(email_exten_edcl) or email.endswith(email_exten_reg):
                     new_user    = User.objects.create_user(username=username, first_name=first_name, last_name=last_name, email=email, password=password)
                     new_user.save()
@@ -784,6 +785,7 @@ def procurement_plan_detail(request,pk):
         }
     return render(request, 'procurement/plan.html', content )
 
+
 def tenders(request):
     time_zero = timedelta(days=0)
     if request.user.is_authenticated:
@@ -792,6 +794,8 @@ def tenders(request):
             company = user.company
             if company:
                 year_plan   = Procurement_doc.objects.filter(company=company.first()).last()
+    else: 
+        year_plan= Procurement_doc.objects.filter(company__name="REG").last()
     tenders = Tender.objects.filter(procurement_doc=year_plan).exclude(Q(activity_status="CANCELED")|Q(activity_status="CLOSED")).all()
     republished = Tender_republished.objects.filter(procurement_doc=year_plan,).exclude(Q(activity_status="CANCELED")|Q(activity_status="CLOSED")).all()
     content ={
@@ -857,104 +861,6 @@ def to_come_tenders(request, pk):
     return render(request, 'procurement/plan.html', content)
 
 
-@login_required
-def tender_update(request, pk):
-    next_url = request.GET.get('next', '/')
-    user    = User.objects.get(id=request.user.id)
-    doc     = Procurement_doc.objects.get(id=pk)
-    if request.method == "POST":
-        tender_id = request.POST['tender']
-        today_date = datetime.today() # was close_date
-        process = request.POST.get('process')
-        files = request.FILES.getlist('files')
-        tender = Tender.objects.get(id=tender_id)
-        current_proced  = tender.workon.last()
-        if not current_proced:
-            if process=="next":
-                method_duration = tender.tendering_method.method_duration.all().order_by('stage__number').first()
-                first_stage     = method_duration.stage
-                procedure       = Procedure.objects.create(user=user, proc_item=tender, procurement_doc=tender.procurement_doc, stage=first_stage, status=first_stage.title)
-                procedure.timestamp = today_date.astimezone()
-                procedure.save()
-                if files:
-                    for file in files:
-                        procedure_file.objects.create(procedure=procedure, files=file)
-                tender.activity_status     = first_stage.title
-                tender.save()
-                actuals(item=tender, next_stage=procedure)
-                tender_forwarding(tender)
-                for_all_stages(year_plan=doc)
-            if next_url:
-                return redirect(next_url)   
-            else: 
-                return redirect('procurement_plan_detail', doc.pk)
-
-        elif current_proced.stage:
-            current_stage = current_proced.stage
-            duration = tender.tendering_method.method_duration.filter(stage=current_stage).first()
-            if process == "next":
-                next_stage  = tender.tendering_method.method_duration.filter(stage__number__gt=current_stage.number).order_by('stage__number').first()
-                if next_stage:
-                    print(next_stage.stage)
-                    tender_forwarding(tender, current_stage)
-                    procedure       = Procedure.objects.create(user=user, proc_item=tender, procurement_doc=tender.procurement_doc, stage=next_stage.stage, status=next_stage.stage.title)
-                    if files:
-                        for file in files:
-                            procedure_file.objects.create(procedure=procedure, files=file)
-                    tender.activity_status     = next_stage.stage.title
-                    tender.save()
-                    # to update closed_date & time_taken going to the next stage 
-                    current_proced.closed_date = today_date.astimezone()
-
-                    time_taken = today_date.astimezone() - current_proced.timestamp
-                    current_proced.time_taken = time_taken
-                    # calculation of late between actual time and time used
-                    if duration.delay <= current_proced.time_taken:
-                        current_proced.late = current_proced.time_taken - duration.delay
-                            
-                    elif current_proced.time_taken >= duration.delay:
-                        current_proced.late = current_proced.time_taken - duration.delay
-
-                    current_proced.save()
-                    actuals(item=tender, current_proced=current_proced ,next_stage=procedure)
-                    all_tenders_stage(tender=tender)
-                    
-                    if next_url:
-                        return redirect(next_url)   
-                    else: 
-                        return redirect('procurement_plan_detail', doc.pk)
-                else:
-                    tender.activity_status     = "CLOSED"
-                    tender.save()
-                    if today_date:
-                        current_proced.closed_date = today_date.astimezone()
-                        time_taken = today_date.astimezone() - current_proced.timestamp
-                        current_proced.time_taken = time_taken
-                        current_proced.status = "CLOSED"
-                        overall_department_committed(tender)
-                        if current_proced.time_taken >= duration.delay:
-                            current_proced.late = current_proced.time_taken - duration.delay
-
-                    else:
-                        current_proced.closed_date = datetime.now()
-                        time_taken = datetime.now().astimezone() - current_proced.timestamp
-                        current_proced.time_taken = time_taken
-                        current_proced.status = "CLOSED"
-                        overall_department_committed(tender)
-                        if current_proced.time_taken >= duration.delay:
-                            current_proced.late = current_proced.time_taken - duration.delay
-
-                    current_proced.save()
-                    actuals(item=tender, current_proced=current_proced)
-                    all_tenders_stage(tender=tender)
-                    
-                    if next_url:
-                        return redirect(next_url)   
-                    else: 
-                        return redirect('procurement_plan_detail', doc.pk)
-            return redirect('procurement_plan_detail', doc.pk)
-    return redirect('procurement_plan_detail', doc.pk)
-
 def republished_tender_update(request, pk):
     next_url = request.GET.get('next', '/')
     user    = User.objects.get(id=request.user.id)
@@ -979,7 +885,7 @@ def republished_tender_update(request, pk):
                 tender.activity_status     = first_stage.title
                 tender.save()
                 republished_actuals(item=tender, next_stage=procedure)
-                # republished_tender_forwarding(tender)
+                republished_tender_forwarding(tender)
                 for_all_stages(year_plan=doc)
             if next_url:
                 return redirect(next_url)   
@@ -992,8 +898,8 @@ def republished_tender_update(request, pk):
             if process == "next":
                 next_stage  = tender.tendering_method.method_duration.filter(stage__number__gt=current_stage.number).order_by('stage__number').first()
                 if next_stage:
-                    print(next_stage.stage)
-                    # republished_tender_forwarding(tender, current_stage)
+                    # print(next_stage.stage)
+                    republished_tender_forwarding(tender, current_stage)
                     procedure       = Procedure.objects.create(user=user, republished_item=tender, procurement_doc=tender.procurement_doc, stage=next_stage.stage, status=next_stage.stage.title)
                     if files:
                         for file in files:
@@ -1233,15 +1139,19 @@ def duration_delete(request, pk):
 
 # ==================================================overall================================================
 
-def overall_stage_detail(request, pk):
-    over_stage = Overall_stages.objects.get(id=pk)
-    year_plan = over_stage.procurement_doc
-    to_comes = over_stage.plans_on_stage.all()
+def overall_stage_detail(request, id, pk):
+    stage = Stage.objects.get(id=pk)
+    year_plan = Procurement_doc.objects.get(id=id)
+    over_stage = Overall_stages.objects.filter(procurement_doc=year_plan, stage=stage).first()
+    plan_tenders = over_stage.plans_on_stage.all().exclude(Q(activity_status__iexact="CANCELED")|Q(activity_status__iexact="Removed"))
+    repub_tenders = over_stage.republished_on_stage.all().exclude(Q(activity_status__iexact="CANCELED")|Q(activity_status__iexact="Removed"))
+    # tenders = chain(plan_tenders,repub_tenders)
     stage = over_stage.stage
     time_zero = timedelta(days=0)
     content ={
         'plan':year_plan,
-        'plan_tenders':to_comes,
+        'plan_tenders':plan_tenders,
+        'republished':repub_tenders,
         'stage':stage,
         'time_zero':time_zero
         }
@@ -1260,6 +1170,154 @@ def overall_department_detail(request, pk):
         'time_zero':time_zero
         }
     return render(request, 'procurement/plan.html', content)
+
+@login_required
+def tender_update(request, pk):
+    next_url = request.GET.get('next', '/')
+    user    = User.objects.get(id=request.user.id)
+    doc     = Procurement_doc.objects.get(id=pk)
+    if request.method == "POST":
+        tender_id = request.POST['tender']
+        today_date = datetime.today() # was close_date
+        process = request.POST.get('process')
+        files = request.FILES.getlist('files')
+        tender = Tender.objects.get(id=tender_id)
+        current_proced  = tender.workon.last()
+        if not current_proced:
+            if process=="next":
+                method_duration = tender.tendering_method.method_duration.all().order_by('stage__number').first()
+                first_stage     = method_duration.stage
+                procedure       = Procedure.objects.create(user=user, proc_item=tender, procurement_doc=tender.procurement_doc, stage=first_stage, status=first_stage.title)
+                procedure.timestamp = today_date.astimezone()
+                procedure.save()
+                if files:
+                    for file in files:
+                        procedure_file.objects.create(procedure=procedure, files=file)
+                tender.activity_status     = first_stage.title
+                tender.save()
+                actuals(item=tender, next_stage=procedure)
+                tender_forwarding(tender)
+                for_all_stages(year_plan=doc)
+            if next_url:
+                return redirect(next_url)   
+            else: 
+                return redirect('procurement_plan_detail', doc.pk)
+
+        elif current_proced.stage:
+            current_stage = current_proced.stage
+            duration = tender.tendering_method.method_duration.filter(stage=current_stage).first()
+            if process == "next":
+                next_stage  = tender.tendering_method.method_duration.filter(stage__number__gt=current_stage.number).order_by('stage__number').first()
+                if next_stage:
+                    procedure       = Procedure.objects.create(user=user, proc_item=tender, procurement_doc=tender.procurement_doc, stage=next_stage.stage, status=next_stage.stage.title)
+                    if files:
+                        for file in files:
+                            procedure_file.objects.create(procedure=procedure, files=file)
+                    tender.activity_status     = next_stage.stage.title
+                    tender.save()
+                    tender_forwarding(tender)
+                    # to update closed_date & time_taken going to the next stage 
+                    current_proced.closed_date = today_date.astimezone()
+
+                    time_taken = today_date.astimezone() - current_proced.timestamp
+                    current_proced.time_taken = time_taken
+                    # calculation of late between actual time and time used
+                    if duration.delay <= current_proced.time_taken:
+                        current_proced.late = current_proced.time_taken - duration.delay
+                            
+                    elif current_proced.time_taken >= duration.delay:
+                        current_proced.late = current_proced.time_taken - duration.delay
+
+                    current_proced.save()
+                    actuals(item=tender, current_proced=current_proced ,next_stage=procedure)
+                    all_tenders_stage(tender=tender)
+                    
+                    if next_url:
+                        return redirect(next_url)   
+                    else: 
+                        return redirect('procurement_plan_detail', doc.pk)
+                else:
+                    tender.activity_status     = "CLOSED"
+                    tender.save()
+                    if today_date:
+                        current_proced.closed_date = today_date.astimezone()
+                        time_taken = today_date.astimezone() - current_proced.timestamp
+                        current_proced.time_taken = time_taken
+                        current_proced.status = "CLOSED"
+                        overall_department_committed(tender)
+                        if current_proced.time_taken >= duration.delay:
+                            current_proced.late = current_proced.time_taken - duration.delay
+
+                    else:
+                        current_proced.closed_date = datetime.now()
+                        time_taken = datetime.now().astimezone() - current_proced.timestamp
+                        current_proced.time_taken = time_taken
+                        current_proced.status = "CLOSED"
+                        overall_department_committed(tender)
+                        if current_proced.time_taken >= duration.delay:
+                            current_proced.late = current_proced.time_taken - duration.delay
+
+                    current_proced.save()
+                    actuals(item=tender, current_proced=current_proced)
+                    all_tenders_stage(tender=tender)
+                    
+                    if next_url:
+                        return redirect(next_url)   
+                    else: 
+                        return redirect('procurement_plan_detail', doc.pk)
+            return redirect('procurement_plan_detail', doc.pk)
+    return redirect('procurement_plan_detail', doc.pk)
+
+def tender_forwarding(tender, current_stage = None):
+    current_procedure = tender.workon.last()
+    tender_s_first_stage = tender.tendering_method.method_duration.all().order_by('stage__number').first().stage
+    tender_s_last_stage = tender.tendering_method.method_duration.all().order_by('stage__number').last().stage
+    year_plan = tender.procurement_doc
+    previous_stage  = tender.tendering_method.method_duration.filter(stage__number__lt=current_procedure.stage.number).order_by('-stage__number').first()
+    if current_procedure:
+        current_stage = current_procedure.stage
+        current_overall_stage   = Overall_stages.objects.filter(procurement_doc=year_plan, stage=current_stage).first()
+        if current_overall_stage:
+            current_overall_stage.plans_on_stage.add(tender)
+            current_overall_stage.save()
+        else:
+            current_overall_stage = Overall_stages.objects.create(procurement_doc=year_plan,stage=current_stage)
+            current_overall_stage.plans_on_stage.add(tender)
+            current_overall_stage.save()
+        if previous_stage:
+            previous_overall_stages  = Overall_stages.objects.filter(procurement_doc=year_plan, stage=previous_stage.stage)
+            if previous_overall_stages:
+                prev_over_stage = previous_overall_stages.first()
+                prev_over_stage.plans_on_stage.remove(tender)
+                prev_over_stage.save()
+        all_tenders_stage(tender)
+
+def republished_tender_forwarding(tender, current_stage = None):
+    current_procedure = tender.workon.last()
+    tender_s_first_stage = tender.tendering_method.method_duration.all().order_by('stage__number').first().stage
+    tender_s_last_stage = tender.tendering_method.method_duration.all().order_by('stage__number').last().stage
+    year_plan = tender.procurement_doc
+    previous_stage  = tender.tendering_method.method_duration.filter(stage__number__lt=current_procedure.stage.number).order_by('-stage__number').first()
+    
+    if current_procedure:
+        current_stage           = current_procedure.stage
+        current_overall_stage   = Overall_stages.objects.filter(procurement_doc=year_plan, stage=current_stage).first()
+        if current_overall_stage:
+            current_overall_stage.republished_on_stage.add(tender)
+            current_overall_stage.save()
+        else:
+            current_overall_stage = Overall_stages.objects.create(procurement_doc=year_plan,stage=current_stage)
+            current_overall_stage.republished_on_stage.add(tender)
+            current_overall_stage.save()
+        if previous_stage:
+            if current_procedure.stage != tender_s_last_stage:
+                previous_overall_stages  = Overall_stages.objects.filter(procurement_doc=year_plan, stage=previous_stage.stage)
+                if previous_overall_stages:
+                    prev_over_stage = previous_overall_stages.first()
+                    prev_over_stage.republished_on_stage.remove(tender)
+                    prev_over_stage.save()
+        all_tenders_stage(tender)
+
 
 # ************************department**************************
 
@@ -1297,7 +1355,7 @@ def overall_department_committed(tender):
         budget = 0
         nom_tenders = overall_department.committed.all()
         rep_tenders = overall_department.rep_committed.all()
-        tenders = nom_tenders|rep_tenders
+        tenders = chain(nom_tenders,rep_tenders)
         for tend in tenders:
             budget = budget + tend.estimated_cost
         overall_department.in_use_budget = budget
@@ -1319,46 +1377,6 @@ def overall_republished_department_committed(tender):
         overall_department.save()
 
 
-# ******************************Section***************************
-
-def tender_forwarding(tender, current_stage = None):
-    year_plan = tender.procurement_doc
-    current_procedure = tender.workon.last()
-    if current_procedure:
-        current_stage           = current_procedure.stage
-        current_overall_stage   = Overall_stages.objects.filter(procurement_doc=year_plan,stage=current_stage).first()
-        next_stage              = tender.tendering_method.method_duration.filter(stage__number__gt=current_stage.number).order_by('stage__number').first()
-        if next_stage:
-            next_overall_stage   = Overall_stages.objects.filter(procurement_doc=year_plan,stage=next_stage.stage).first()
-            if next_overall_stage:
-                current_overall_stage.plans_on_stage.remove(tender)
-                current_overall_stage.save()
-                next_overall_stage.plans_on_stage.add(tender)
-                next_overall_stage.save()
-            else:
-                next_overall_stage = Overall_stages.objects.create(procurement_doc=year_plan,stage=next_stage.stage)
-                next_overall_stage.plans_on_stage.add(tender)
-                next_overall_stage.save()
-                if current_overall_stage:
-                    current_overall_stage.plans_on_stage.remove(tender)
-                    current_overall_stage.save()
-            all_tenders_stage(tender)
-        else:
-            pass
-    else:
-        first_stage     = Stage.objects.all().order_by('number').first()
-        overall_stage   = Overall_stages.objects.filter(procurement_doc=year_plan,stage=first_stage).first()
-        if overall_stage:
-            overall_stage.plans_on_stage.add(tender)
-            overall_stage.save()
-            # backup_db = overall_stage.save(using='new_maria_db')
-        else:
-            overall_stage = Overall_stages.objects.create(procurement_doc=year_plan,stage=first_stage)
-            overall_stage.plans_on_stage.add(tender)
-            overall_stage.save()
-            # backup_db = overall_stage.save(using='new_maria_db')
-
-
 def republished_tender_forwarding(tender, current_stage = None):
     year_plan = tender.procurement_doc
     current_procedure = tender.workon.last()
@@ -1369,22 +1387,17 @@ def republished_tender_forwarding(tender, current_stage = None):
         if next_stage:
             next_overall_stage   = Overall_stages.objects.filter(procurement_doc=year_plan,stage=next_stage.stage).first()
             if next_overall_stage:
-                
                 current_overall_stage.republished_on_stage.remove(tender)
                 current_overall_stage.save()
-                # backup_db = current_overall_stage.save(using='new_maria_db')
                 next_overall_stage.republished_on_stage.add(tender)
                 next_overall_stage.save()
-                # backup_db = next_overall_stage.save(using='new_maria_db')
             else:
                 next_overall_stage = Overall_stages.objects.create(procurement_doc=year_plan,stage=next_stage.stage)
                 next_overall_stage.republished_on_stage.add(tender)
                 next_overall_stage.save()
-                # backup_db = next_overall_stage.save(using='new_maria_db')
                 if current_overall_stage:
                     current_overall_stage.republished_on_stage.remove(tender)
                     current_overall_stage.save()
-                    # backup_db = current_overall_stage.save(using='new_maria_db')
             all_tenders_stage(tender)
         else:
             pass
@@ -1394,12 +1407,10 @@ def republished_tender_forwarding(tender, current_stage = None):
         if overall_stage:
             overall_stage.republished_on_stage.add(tender)
             overall_stage.save()
-            # backup_db = overall_stage.save(using='new_maria_db')
         else:
             overall_stage = Overall_stages.objects.create(procurement_doc=year_plan,stage=first_stage)
             overall_stage.republished_on_stage.add(tender)
             overall_stage.save()
-            # backup_db = overall_stage.save(using='new_maria_db')
 
 
 def all_tenders_stage(tender):
@@ -1553,7 +1564,7 @@ def actuals(item,current_proced = None, next_stage = None):
 def republished_actuals(item,current_proced = None, next_stage = None):
     now  = datetime.today()
     tender_report = item.republished_tender_report.first()
-    print(tender_report)
+    # print(tender_report)
     if current_proced is None:
         tender_report.actual_tender_doc_preparation = now
     elif current_proced:

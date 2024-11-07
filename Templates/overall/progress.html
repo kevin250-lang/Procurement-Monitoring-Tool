@@ -50,7 +50,7 @@
                     <tbody>
                     {% for stage in year_plan.over_stages_procurement.all %}
                       <tr>
-                          <td><a href="{% url 'overall_stage_detail' stage.pk %}">{{stage.stage.title}}</a></td>
+                          <td><a href="{% url 'overall_stage_detail' year_plan.id stage.pk %}">{{stage.stage.title}}</a></td>
                           <td>{{stage.actual_duration_total|truncatechars:12}}</td>
                           <td><span class="text-primary">{{stage.used_time_total|truncatechars:12}}</span></td>
                           <td><span class="text-success">{{stage.average|truncatechars:12}} </td>

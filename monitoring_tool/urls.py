@@ -58,7 +58,7 @@ urlpatterns = [
     re_path(r'^stages/$', create_stages, name='stage_creation'),
     re_path(r'^stages/(?P<pk>[\d]+)/update/$', stage_update, name='stage_updation'),
     re_path(r'^stages/(?P<pk>[\d]+)/delete/$', stage_delete, name='stage_deletion'),
-    re_path(r'^overall/stages/(?P<pk>[\d]+)/detail/$', overall_stage_detail, name='overall_stage_detail'),
+    re_path(r'^overall/stages/(?P<id>[\d]+)/(?P<pk>[\d]+)/detail/$', overall_stage_detail, name='overall_stage_detail'),
 
     # ==========================================method==============================
     re_path(r'^tender/methods/$', create_method, name='create_method'),

@@ -110,7 +110,7 @@
         {% else %}
          <a href="{% url 'republished_detail' tender.republished_tender.first.id %}"> | REPUBLISHED</a>
         {% endif %}
-      {% elif tender.workon.last.stage.title == tender.tendering_method.method_duration.all.last.stage.title and tender.workon.last.closed_date != "None" %}
+      {% elif tender.workon.last.stage.title == tender.tendering_method.method_duration.all.last.stage.title and tender.workon.last.closed_date != None %}
         <span class="text-success"><b>Closed Tender</b></span>
       {% else %}
         {% if request.user.is_authenticated %}

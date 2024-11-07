@@ -52,9 +52,11 @@
             <li class="list-group-item">
               {% if file.company|upper == 'REG' %}<b><span class="text-danger">{{file.company}} | </span> </b> {% elif file.company|upper == 'EUCL' %}<b><span class="text-primary">{{file.company}} | </span> </b> {% elif file.company|upper == 'EDCL' %}<b><span class="text-success">{{file.company}} | </span> </b> {% endif %}
                 {{file.title}} : {{file.plan_tenders.all.count}}
-                <button type="button" class="btn btn-sm btn-danger float-right mx-2" data-toggle="modal" data-target="#exampleModalDurationDelete{{file.id}}">
-                  <i class="fa fa-trash"></i>Delete
-                </button>
+                {% if request.user.is_authenticated %}
+                  <button type="button" class="btn btn-sm btn-danger float-right mx-2" data-toggle="modal" data-target="#exampleModalDurationDelete{{file.id}}">
+                    <i class="fa fa-trash"></i>Delete
+                  </button>
+                {% endif %}
                 <a href="{% url 'procurement_plan_detail' file.pk %}" class="btn-sm btn-primary float-right"><i class="fa fa-circle-info"></i> Detail</a>
             </li>
           {% endfor %}
@@ -76,14 +78,14 @@
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h6 class="modal-title" id="exampleModalLabel">{{file.title}} :{{file.plan_tenders.all.count}}</h6>
+                        <h6 class="modal-title text-danger" id="exampleModalLabel"><b>Plan Deletion</b></h6>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
                     <div class="modal-body">
                         <p class="text-danger">Do you want to delete this Plan?</p>
-                        <p><strong>{{meth_dur.stage}}</strong> which has duration of <strong>{{meth_dur.delay}}</strong></p>
+                        <p class="text-dark"><h6><strong>{{file.title}}</strong> which has <strong>{{file.plan_tenders.all.count}} Tenders</strong></h6></p>
                         <div class="modal-footer">
                         <button type="button" class="btn btn-outline-success" data-dismiss="modal">Cancel</button>
                         <a href="{% url 'procurement_plan_deletion' file.pk %}?next={{request.url}}" class="btn btn-outline-danger float-right mx-1">Yes</a>
