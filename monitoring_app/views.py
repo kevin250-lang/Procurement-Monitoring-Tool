@@ -17,7 +17,7 @@ from monitoring_app.models import *
 from django.contrib import messages
 from tablib import Dataset
 from monitoring_app.forms import *
-# from monitoring_app.usy import *
+from monitoring_app.usy import *
 
 
 def home(request):
@@ -312,21 +312,22 @@ def performances(request):
         year_plan_reg = Procurement_doc.objects.filter(company__name='REG', timestamp__year=year['year']).last()
         year_plan_edcl = Procurement_doc.objects.filter(company__name='EDCL', timestamp__year=year['year']).last()
         year_plan_eucl = Procurement_doc.objects.filter(company__name='EUCL', timestamp__year=year['year']).last()
+
         if year_plan_reg and year_plan_edcl and year_plan_eucl:
             value = [str(year['year']), year_plan_reg.total_budget, year_plan_edcl.total_budget, year_plan_eucl.total_budget]
-            
         elif year_plan_reg and year_plan_edcl and not year_plan_eucl:
             value = [str(year['year']), year_plan_reg.total_budget, year_plan_edcl.total_budget, 0]
         elif year_plan_reg and year_plan_eucl and not year_plan_edcl:
             value = [str(year['year']), year_plan_reg.total_budget, 0, year_plan_eucl.total_budget]
-        elif year_plan_reg and not year_plan_eucl and not year_plan_edcl:
-            value = [str(year['year']), year_plan_reg.total_budget, 0, 0]
         elif year_plan_eucl and year_plan_edcl and not year_plan_reg:
             value = [str(year['year']), 0, year_plan_edcl.total_budget, year_plan_eucl.total_budget]
+        elif year_plan_reg and not year_plan_eucl and not year_plan_edcl:
+            value = [str(year['year']), year_plan_reg.total_budget, 0, 0]
         elif year_plan_eucl and not year_plan_edcl and not year_plan_reg:
             value = [str(year['year']), 0, 0, year_plan_eucl.total_budget]
-        elif year_plan_edcl and not year_plan_reg and year_plan_eucl:
+        elif year_plan_edcl and not year_plan_reg and not year_plan_eucl:
             value = [str(year['year']), 0, year_plan_edcl.total_budget, 0]
+
         companies.append(value)
 
     # ============================= STAGES ==================================
@@ -340,7 +341,7 @@ def performances(request):
             stagy =[stage.stage.title, stage.plans_on_stage.count()]
             edcl_stages.append(stagy)
 
-    if eucl_all_plan:
+    if eucl_year_plan:
         for stage in eucl_year_plan.over_stages_procurement.all():
             stagy =[stage.stage.title, stage.plans_on_stage.count()]
             eucl_stages.append(stagy)
@@ -366,6 +367,7 @@ def performances(request):
         'eucl_stages':eucl_stages,
         'companies':companies,
     }
+    # request.session['performances']=content
     return render(request, 'home.html', content)
 
 
@@ -1160,7 +1162,7 @@ def overall_stage_detail(request, id, pk):
 def overall_department_detail(request, pk):
     over_department = Overall_department.objects.get(id=pk)
     year_plan = over_department.year_proc
-    to_comes = over_department.tenders
+    to_comes = over_department.tenders.all()
     # stage = over_department.stage
     time_zero = timedelta(days=0)
     content ={

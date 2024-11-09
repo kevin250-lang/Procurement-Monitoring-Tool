@@ -27,24 +27,25 @@
           </div>
         {% endif %}
         
-        <form action="{% url 'file_upload' %}?next={{request.url}}" method="POST" enctype="multipart/form-data">
-          {% csrf_token %}
-          <!-- file picker -->
-          {% comment %} <label for="company" >Company: </label>
-          <select name="company" id="" class="form-control">
-            <option value="REG">REG</option>
-            <option value="EDCL">EDCL</option>
-            <option value="EUCL">EUCL</option>
-          </select><br> {% endcomment %}
+        {% if not proc_files %}
+          <form action="{% url 'file_upload' %}?next={{request.url}}" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
 
-          <label for="title">Title: </label>
-          <input type="text" name="title" id="" class="form-control" required><br>
+            <label for="title">Title: </label>
+            <input type="text" name="title" id="" class="form-control" required><br>
 
-          <label for="demoa">File: </label>
-          <input type="file" name="files" id="demoa" class="form-control" required><br>
+            <label for="demoa">File: </label>
+            <input type="file" name="files" id="demoa" class="form-control" required><br>
 
-          <input type="submit" class="btn btn-primary" value="Upload">
-        </form>
+            <input type="submit" class="btn btn-success" value="Upload">
+          </form>
+        {% else %}
+        <div class="row">
+          <div class="col">
+            <button type="button" class="btn btn-primary px-3 float-right" data-toggle="modal" data-target=".bd-example-modal-lg"><i class="fa fa-plus"></i> Plan</button>
+          </div>
+        </div>
+        {% endif %}
 
 
         <ul class="list-group list-group-flush my-4">
@@ -94,8 +95,37 @@
                 </div>
             </div>
         </div>
-        
     {% endfor %}
+
+
+    {% comment %} ======================================== adding plan modal ================================================ {% endcomment %}
+
+    <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLongTitle">Add a Plan</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form action="{% url 'file_upload' %}?next={{request.url}}" method="POST" enctype="multipart/form-data">
+              {% csrf_token %}
+              <!-- file picker -->
+  
+              <label for="title">Title: </label>
+              <input type="text" name="title" id="" class="form-control" required><br>
+  
+              <label for="demoa">File: </label>
+              <input type="file" name="files" id="demoa" class="form-control" required><br>
+  
+              <input type="submit" class="btn btn-success" value="Upload">
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
 
 </body>
 </html>

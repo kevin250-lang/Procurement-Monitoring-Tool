@@ -189,11 +189,11 @@
                                     <li class="ml-0"> {{stage.stage}}: 
                                       {% if request.user.is_authenticated %}
                                         {% if request.user.user_info.company.first == reg_year_plan.company or request.user.user_info.company.last == reg_year_plan.company %}
-                                          <a href="{% url 'overall_stage_detail' reg_year_plan.id stage.pk %}">{{stage.plans_on_stage.count}}</a> 
+                                          <a href="{% url 'overall_stage_detail' reg_year_plan.id stage.stage.pk %}">{{stage.plans_on_stage.count}}</a> 
                                         {% else %}
                                           {{stage.plans_on_stage.count}}
                                         {% endif %}
-                                      {% else %} {% comment %} ({{stage.percent}}%) {% endcomment %}
+                                      {% else %} ({{stage.percent}}%)
                                         {{stage.plans_on_stage.count}}
                                       {% endif %}
     
@@ -238,12 +238,20 @@
                                     <li class="ml-0"> {{stage.stage}}: 
                                       {% if request.user.is_authenticated %}
                                         {% if request.user.user_info.company.first == edcl_year_plan.company or request.user.user_info.company.last == edcl_year_plan.company %}
-                                          <a href="{% url 'overall_stage_detail' edcl_year_plan.id stage.stage.pk %}">{{stage.plans_on_stage.count}}</a> 
+                                          <a href="{% url 'overall_stage_detail' edcl_year_plan.id stage.stage.pk %}">
+                                            {% with total_count=stage.plans_on_stage.count|add:stage.republished_on_stage.count %}
+                                              {{ total_count }}
+                                            {% endwith %}
+                                          </a> 
                                         {% else %}
-                                          {{stage.plans_on_stage.count}}
+                                          {% with total_count=stage.plans_on_stage.count|add:stage.republished_on_stage.count %}
+                                            {{ total_count }}
+                                          {% endwith %}
                                         {% endif %}
-                                      {% else %} {% comment %} ({{stage.percent}}%) {% endcomment %}
-                                        {{stage.plans_on_stage.count}}
+                                      {% else %}
+                                        {% with total_count=stage.plans_on_stage.count|add:stage.republished_on_stage.count %}
+                                          {{ total_count }}
+                                        {% endwith %}
                                       {% endif %}
     
                                       {% for method in dur.method.the_method.all %}
@@ -291,12 +299,20 @@
                                     <li class="ml-0"> {{stage.stage}}: 
                                       {% if request.user.is_authenticated %}
                                         {% if request.user.user_info.company.first == eucl_year_plan.company or request.user.user_info.company.last == eucl_year_plan.company %}
-                                          <a href="{% url 'overall_stage_detail' eucl_year_plan.id stage.pk %}">{{stage.plans_on_stage.count}}</a> 
+                                          <a href="{% url 'overall_stage_detail' eucl_year_plan.id stage.stage.pk %}">
+                                            {% with total_count=stage.plans_on_stage.count|add:stage.republished_on_stage.count %}
+                                              {{ total_count }}
+                                            {% endwith %}
+                                          </a> 
                                         {% else %}
-                                          {{stage.plans_on_stage.count}}
+                                          {% with total_count=stage.plans_on_stage.count|add:stage.republished_on_stage.count %}
+                                            {{ total_count }}
+                                          {% endwith %}
                                         {% endif %}
                                       {% else %} {% comment %} ({{stage.percent}}%) {% endcomment %}
-                                        {{stage.plans_on_stage.count}}
+                                        {% with total_count=stage.plans_on_stage.count|add:stage.republished_on_stage.count %}
+                                          {{ total_count }}
+                                        {% endwith %}
                                       {% endif %}
     
                                       {% for method in dur.method.the_method.all %}

@@ -19,6 +19,7 @@ from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
 from monitoring_app.views import *
+from monitoring_app.pdf import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -52,6 +53,7 @@ urlpatterns = [
     re_path(r'^tender/(?P<pk>[\d]+)/tenders/to/come/$', to_come_tenders, name='to_come_tenders'),
     re_path(r'^overall/department/(?P<pk>[\d]+)/detail/$', overall_department_detail, name='overall_department_detail'),
     re_path(r'^tenders/list/', tenders, name="tenders"),
+    re_path(r'^performances/pdf/$', performances_pdf, name='performances_pdf'),
 
 
     # ==========================================stage==============================

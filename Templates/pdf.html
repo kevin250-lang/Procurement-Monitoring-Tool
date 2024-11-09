@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+    {% load static %}
+<head>
+  <meta charset="UTF-8">
+  <title>Overall Companies Pdf</title>
+
+  {% include 'snippets/head.html' %}
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <script type="text/javascript">
+            google.charts.load("current", {packages:["corechart"]});
+            google.charts.setOnLoadCallback(drawChartReg);
+            google.charts.setOnLoadCallback(drawChartEdcl);
+            google.charts.setOnLoadCallback(drawChartEucl);
+            google.charts.setOnLoadCallback(drawChartEuclStage);
+            google.charts.setOnLoadCallback(drawChartRegStage);
+            google.charts.setOnLoadCallback(drawChartEdclStage);
+            {% comment %} ===========================Eucl=========================== {% endcomment %}
+            function drawChartEucl() {
+                var data = google.visualization.arrayToDataTable({{eucl_info|safe}});
+            var options = {
+                pieSliceText: 'label',
+                title: 'EUCL Overall Chart',
+            };
+                var chart = new google.visualization.PieChart(document.getElementById('piecharteucl'));
+                chart.draw(data, options);
+            }
+
+            function drawChartEuclStage() {
+                var data = google.visualization.arrayToDataTable({{eucl_stages|safe}});
+            var options = {
+                pieSliceText: 'label',
+                title: 'EUCL Progress Chart',
+            };
+                var chart = new google.visualization.PieChart(document.getElementById('piecharteuclstage'));
+                chart.draw(data, options);
+            }
+
+            {% comment %} ===========================REG=========================== {% endcomment %}
+            function drawChartReg() {
+                var data = google.visualization.arrayToDataTable({{reg_info|safe}});
+                var options = {
+                pieSliceText: 'label',
+                title: 'REG Overall Chart',
+                };
+                var chart = new google.visualization.PieChart(document.getElementById('piechartreg'));
+                chart.draw(data, options);
+            }
+
+            function drawChartRegStage() {
+                var data = google.visualization.arrayToDataTable({{reg_stages|safe}});
+                var options = {
+                pieSliceText: 'label',
+                title: 'REG Progress Chart',
+                };
+                var chart = new google.visualization.PieChart(document.getElementById('piechartregstage'));
+                chart.draw(data, options);
+            }
+
+
+
+            {% comment %} ===========================EDCL=========================== {% endcomment %}
+            function drawChartEdcl() {
+                var data = google.visualization.arrayToDataTable({{edcl_info|safe}});
+                var options = {
+                pieSliceText: 'label',
+                title: 'EDCL Overall Chart',
+                };
+                var chart = new google.visualization.PieChart(document.getElementById('piechartedcl'));
+                chart.draw(data, options);
+            }
+
+            function drawChartEdclStage() {
+                var data = google.visualization.arrayToDataTable({{edcl_stages|safe}});
+                var options = {
+                pieSliceText: 'label',
+                title: 'EDCL Progress Chart',
+                };
+                var chart = new google.visualization.PieChart(document.getElementById('piechartedclstage'));
+                chart.draw(data, options);
+            }
+        </script>
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.3.2/html2canvas.min.js"></script>
+
+
+  {% comment %} ========================================= CSS style for pdf page ===================================== {% endcomment %}
+  <style type="text/css">
+    body {
+        font-weight: 200;
+        font-size: 14px;
+    }
+    .header {
+        font-size: 20px;
+        font-weight: 100;
+        text-align: center;
+        color: #007cae;
+    }
+    .title {
+        font-size: 22px;
+        font-weight: 100;
+        /* text-align: right;*/
+        padding: 10px 20px 0px 20px;  
+    }
+    .title span {
+        color: #007cae;
+    }
+    .details {
+        padding: 10px 20px 0px 20px;
+        text-align: left !important;
+        /*margin-left: 40%;*/
+    }
+    .hrItem {
+        border: none;
+        height: 1px;
+        /* Set the hr color */
+        color: #333; /* old IE */
+        background-color: #fff; /* Modern Browsers */
+    }
+</style>
+
+</head>
+<body>
+<div id="content">
+    <div class='details'>
+        <div class="card-body">
+            {% comment %} ========================================= charts ======================================== {% endcomment %}
+            {% if reg_year_plan %}
+            <div class="row">
+                <div class="col-lg-2">
+                    <img src="{% static 'img/logo.png' %}" class="float-end" max-width="60" height="30" alt="EUCL Logo">
+                </div>
+              <div class="col-lg-5">
+                <div id="piechartreg" style=""></div>
+              </div>
+              <div class="col-lg-5">
+                <div id="piechartregstage" style=""></div>
+              </div>
+            </div><hr>
+            {% endif %}
+            
+            {% if edcl_year_plan %}
+            <div class="row">
+                <div class="col-lg-2">
+                    <img src="{% static 'img/EDCL.png' %}" class="float-end" max-width="60" height="30" alt="EUCL Logo">
+                </div>
+                <div class="col-lg-5">
+                    <div id="piechartedcl" style=""></div>
+                </div>
+                <div class="col-lg-5">
+                    <div id="piechartedclstage" style=""></div>
+                </div>
+            </div><hr>
+            {% endif %}
+
+            {% if eucl_year_plan %}
+            <div class="row">
+              <div class="col-lg-6">
+                <div id="piecharteucl" ></div>
+              </div>
+              <div class="col-lg-6">
+                <div id="piecharteuclstage" ></div>
+              </div>
+            </div><hr>
+            {% endif %}
+            <div class="row">
+              <div class="col-lg-6">
+                <div class="shadow-sm mb-2 bg-body bg-white rounded py-3 px-3" id="chart_div">
+                    <img src="data:image/png;base64,{{chart|safe}}" alt="" srcset="" style="width:70%" id="img">
+                </div>
+              </div>
+            </div>
+            {% comment %} ======================================= end of charts =================================== {% endcomment %}
+        </div>
+
+
+        <div class="card-body">
+            {% comment %} ======================================= Start of tables ======================================= {% endcomment %}
+            <div class="tab-pane fade show" id="list-home-Performance" role="tabpanel" aria-labelledby="list-home-list">
+              <div class="row">
+                  {% if reg_year_plan %}
+                  <div class="col-lg-4 mb-2">
+                    <div class="card border-primary" >
+                      <div class="card-header">
+                        <img src="{% static 'img/logo.png' %}" class="float-start" max-width="60" height="30" alt="REG Logo">
+                      </div>
+
+                      <div class="card-body">
+                        <h5 class="card-title">
+                            
+                        </h5>
+                        <p class="card-text">
+                          <ul class="m-0">
+                            {% for stage in reg_year_plan.over_stages_procurement.all %}
+                              <li class="ml-0"> {{stage.stage}}: 
+                                {% if request.user.is_authenticated %}
+                                  {% if request.user.user_info.company.first == reg_year_plan.company or request.user.user_info.company.last == reg_year_plan.company %}
+                                    <a href="{% url 'overall_stage_detail' reg_year_plan.id stage.pk %}">{{stage.plans_on_stage.count}}</a> 
+                                  {% else %}
+                                    {{stage.plans_on_stage.count}}
+                                  {% endif %}
+                                {% else %} ({{stage.percent}}%)
+                                  {{stage.plans_on_stage.count}}
+                                {% endif %}
+
+                                {% for method in dur.method.the_method.all %}
+                                {{dur.method}} 
+                                  {% if method.stage == stage and method.method == dur.method.first %}
+                                  | <span class="text-success">{{method.method.average}}</span>
+                                  {% endif %}
+                                {%endfor%}</li>
+                            {% endfor%}
+                            <li><span class="text-danger"><b>Late to start:</b><a href="{% url 'late_tenders' reg_year_plan.pk %}">|  <u>{{reg_late_tenders.count}}</u></a></span></li>
+                            <li><span class="text-primary">Today: <a href="{% url 'today_tenders' reg_year_plan.pk %}">| <u>{{reg_today_tenders.count}} </u></a></span></li>
+                            <li><span class="text-success">To Comes: <a href="{% url 'to_come_tenders' reg_year_plan.pk %}"> <u>{{reg_to_comes.count}} </u></a></span></li>
+                          </ul>
+                        </p>
+                      </div>
+                      <div class="card-footer">
+                        <span class="float-left">Tenders {{reg_year_plan.plan_tenders.count}} </span>
+                      </div>
+                    </div>
+                  </div>
+                {% endif %}
+
+                {% if edcl_year_plan %}
+                  <div class="col-lg-4 mb-2">
+                    <div class="card border-primary" >
+                      <div class="card-header">
+                        <h5 class="card-title">
+                            <img src="{% static 'img/EDCL.png' %}" max-width="60" height="30" alt="EDCL Logo">
+                        </h5>
+                      </div>
+                      <div class="card-body">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Stages</th>
+                                    <th>Tenders</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stage in edcl_year_plan.over_stages_procurement.all %}
+                                    <tr>
+                                        <td>
+                                            {{stage.stage}}
+                                        </td>
+                                        <td >
+                                            {% with total_count=stage.plans_on_stage.count|add:stage.republished_on_stage.count %}
+                                            {{ total_count }}
+                                            {% endwith %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                <tr class="bg-success text-white">
+                                    <td>
+                                        To Comes
+                                    </td>
+                                    <td>
+                                        {{edcl_to_comes.count}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Today
+                                    </td>
+                                    <td>
+                                        {{edcl_today_tenders.count}}
+                                    </td>
+                                </tr>
+                                <tr class="bg-danger text-white">
+                                    <td>
+                                        Late to start
+                                    </td>
+                                    <td>
+                                        {{edcl_late_tenders.count}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        All Tenders
+                                    </td>
+                                    <td>
+                                        {{edcl_year_plan.plan_tenders.count}}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    </div>
+                  </div>
+                {% endif %}
+
+
+                {% if eucl_year_plan %}
+                  <div class="col-lg-4 mb-2">
+                    <div class="card border-primary" >
+                      <div class="card-header">
+                        <img src="{% static 'img/EUCL.png' %}" class="float-end" max-width="60" height="30" alt="EUCL Logo">
+                      </div>
+                      <div class="card-body">
+                        <h5 class="card-title">
+                        </h5>
+                        <p class="card-text">
+                          <ul class="m-0">
+                            {% for stage in eucl_year_plan.over_stages_procurement.all %}
+                              <li class="ml-0"> {{stage.stage}}: 
+                                {% if request.user.is_authenticated %}
+                                  {% if request.user.user_info.company.first == eucl_year_plan.company or request.user.user_info.company.last == eucl_year_plan.company %}
+                                    <a href="{% url 'overall_stage_detail' eucl_year_plan.id stage.pk %}">
+                                      {% with total_count=stage.plans_on_stage.count|add:stage.republished_on_stage.count %}
+                                        {{ total_count }}
+                                      {% endwith %}
+                                    </a> 
+                                  {% else %}
+                                    {% with total_count=stage.plans_on_stage.count|add:stage.republished_on_stage.count %}
+                                      {{ total_count }}
+                                    {% endwith %}
+                                  {% endif %}
+                                {% else %} {% comment %} ({{stage.percent}}%) {% endcomment %}
+                                  {% with total_count=stage.plans_on_stage.count|add:stage.republished_on_stage.count %}
+                                    {{ total_count }}
+                                  {% endwith %}
+                                {% endif %}
+
+                                {% for method in dur.method.the_method.all %}
+                                {{dur.method}} 
+                                  {% if method.stage == stage and method.method == dur.method.first %}
+                                  | <span class="text-success">{{method.method.average}}</span>
+                                  {% endif %}
+                                {%endfor%}</li>
+                            {% endfor%}
+                            <li><span class="text-danger"><b>Late to start: </b><a href="{% url 'late_tenders' eucl_year_plan.pk %}">  <u>{{eucl_late_tenders.count}}</u></a></span></li>
+                            <li><span class="text-primary"><b>Today: </b><a href="{% url 'today_tenders' eucl_year_plan.pk %}"> <u>{{eucl_today_tenders.count}} </u></a></span></li>
+                            <li><span class="text-success"><b>Forthcoming: </b><a href="{% url 'to_come_tenders' eucl_year_plan.pk %}"> <u>{{eucl_to_comes.count}} </u></a></span></li>
+                          </ul>
+                        </p>
+                      </div>
+                      <div class="card-footer">
+                          <span class="float-left">Tenders {{eucl_year_plan.plan_tenders.count}} </span>
+                          {% comment %} <span class="text-danger float-right"><a href="{% url 'late_tenders' eucl_year_plan.pk %}">|  <u>{{eucl_late_tenders.count}}</u></a></span>
+                          <span class="text-primary float-right"><a href="{% url 'today_tenders' eucl_year_plan.pk %}">| <u>{{eucl_today_tenders.count}} </u></a></span>
+                          <span class="text-success float-right"><a href="{% url 'to_come_tenders' eucl_year_plan.pk %}"> <u>{{eucl_to_comes.count}} </u></a></span> {% endcomment %}
+                      </div>
+                    </div>
+                  </div>
+                {% endif %}
+              </div>    
+            </div>
+
+            {% comment %} =================================== end of tables =============================== {% endcomment %}
+        </div>
+
+
+    </div>
+
+
+</div>
+
+
+<div class="row mb-5">
+    <div class="col">
+        <button id="generatePDF" class="btn btn-danger float-right">Generate PDF</button>
+    </div>
+</div>
+
+
+
+
+
+
+<script>
+  function displayAlert() {
+    alert("Hello from PDF!");
+  }
+
+  document.getElementById('generatePDF').addEventListener('click', function () {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    html2canvas(document.getElementById('content')).then(canvas => {
+      const imgData = canvas.toDataURL('image/png');
+      const imgWidth = 190;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      doc.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+      doc.save("generated.pdf");
+    });
+  });
+</script>
+{% comment %} ==================== google chart =================== {% endcomment %}
+<script>
+    google.charts.load('current', {'packages':['bar']});
+    google.charts.setOnLoadCallback(drawChart);
+
+    function drawChart() {
+    var data = google.visualization.arrayToDataTable({{companies|safe}});
+
+    var options = {
+        chart: {
+        title: 'BUDGETs',
+        subtitle: 'REG/EDCL/EUCL',
+        },
+        bars: 'horizontal', // Required for Material Bar Charts.
+        hAxis: {format: 'decimal'},
+        height: 250,
+        colors: ['#df041c', '#0e921e', '#0628b2']
+    };
+
+    var chart = new google.charts.Bar(document.getElementById('chart_div'));
+
+    chart.draw(data, google.charts.Bar.convertOptions(options));
+
+    var btns = document.getElementById('btn-group');
+
+    btns.onclick = function (e) {
+
+        if (e.target.tagName === 'BUTTON') {
+        options.hAxis.format = e.target.id === 'none' ? '' : e.target.id;
+        chart.draw(data, google.charts.Bar.convertOptions(options));
+        }
+    }
+    }
+</script>
+
+</body>
+</html>
